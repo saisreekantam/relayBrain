@@ -1,0 +1,94 @@
+:root {
+  --color-idle: #4a4a5e;
+  --color-active: #f7b91c; /* premium yellow */
+  --color-success: #00ff9d; /* developer accent */
+  --color-warning: #f59e0b;
+  --color-critical: #ef4444;
+  --color-surface-1: #1e1e1e;
+  --color-surface-2: #171717;
+  --color-surface-3: #252525;
+  --color-border: #2e2e2e;
+  
+  --text-primary: #e0e0e0;
+  --text-secondary: #8a8a9e;
+  --text-muted: #5a5a72;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background-color: var(--color-surface-1);
+  color: var(--text-primary);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.mono {
+  font-family: var(--font-mono), monospace;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.section-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes pulse-active {
+  0% { box-shadow: 0 0 0 0 rgba(247, 185, 28, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(247, 185, 28, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(247, 185, 28, 0); }
+}
+
+@keyframes pulse-warning {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+@keyframes pulse-critical {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes progress-fill {
+  from { width: 0%; }
+}

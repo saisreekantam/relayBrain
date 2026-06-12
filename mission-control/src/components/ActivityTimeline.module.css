@@ -1,0 +1,75 @@
+.panel {
+  height: 100%;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  background: #1e1e1e;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.item:hover {
+  background: #252525;
+  border-color: #3d3d3d;
+}
+
+.indicator {
+  width: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.architect { background-color: var(--accent-architect); }
+.developer { background-color: var(--accent-developer); }
+.security { background-color: var(--accent-security); }
+.deployment { background-color: var(--accent-deployment); }
+
+.content {
+  flex: 1;
+}
+
+.agentInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.agentName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.time {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.action {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.alertText {
+  color: var(--accent-security);
+  font-weight: 500;
+}

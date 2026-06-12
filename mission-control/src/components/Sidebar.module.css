@@ -1,0 +1,173 @@
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: #171717; /* .bg-card from temp.cs */
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  flex-shrink: 0;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 24px;
+}
+
+.logoIcon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.logoText {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.section {
+  padding: 0 16px;
+  margin-bottom: 24px;
+}
+
+.projectHeader {
+  background-color: #353535; /* .bg-sidebar-card-top */
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.projectIcon {
+  width: 36px;
+  height: 36px;
+  background-color: #2d2d2d; /* .icon-background */
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.innerIcon {
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+.projectInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.projectTitle {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.projectSub {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.navSection {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  padding: 0 20px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-right: 2px solid transparent;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.navItem:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: #a1a0a0;
+}
+
+.navItem.active {
+  color: var(--text-primary);
+  border-right-color: white;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.itemHash {
+  font-size: 1.1rem;
+  margin-right: 12px;
+  opacity: 0.5;
+}
+
+.itemIcon {
+  font-size: 1.1rem;
+  margin-right: 12px;
+}
+
+.itemTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+.badge {
+  background-color: var(--accent-security);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 12px;
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+.userSection {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color); /* .sidebar-separator-bottom */
+  display: flex;
+  align-items: center;
+}
+
+.userAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--accent-developer);
+  color: #171717;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.userRole {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
