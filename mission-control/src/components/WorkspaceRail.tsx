@@ -1,9 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './WorkspaceRail.module.css';
 
-const workspaces = [
+interface Workspace {
+  id: string;
+  name: string;
+  full: string;
+  active: boolean;
+}
+
+const defaultWorkspaces: Workspace[] = [
   { id: 'gg', name: 'GG', full: 'GoalGuard', active: true },
   { id: 'os', name: 'OS', full: 'OrbitOS', active: false },
   { id: 'dt', name: 'DT', full: 'DataTool', active: false },
@@ -11,6 +19,26 @@ const workspaces = [
 
 export default function WorkspaceRail() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(defaultWorkspaces);
+  const router = useRouter();
+
+  useEffect(() => {
+    const saved = localStorage.getItem('mesh_workspaces');
+    if (saved) {
+      setWorkspaces(JSON.parse(saved));
+    } else {
+      localStorage.setItem('mesh_workspaces', JSON.stringify(defaultWorkspaces));
+    }
+  }, []);
+
+  const selectWorkspace = (id: string) => {
+    const updated = workspaces.map(ws => ({
+      ...ws,
+      active: ws.id === id
+    }));
+    setWorkspaces(updated);
+    localStorage.setItem('mesh_workspaces', JSON.stringify(updated));
+  };
 
   return (
     <nav 
@@ -21,7 +49,11 @@ export default function WorkspaceRail() {
       <div className={styles.topSection}>
         {isExpanded && <div className={styles.sectionTitle}>WORKSPACES</div>}
         {workspaces.map(ws => (
-          <div key={ws.id} className={`${styles.itemWrapper} ${ws.active ? styles.activeWrapper : ''}`}>
+          <div 
+            key={ws.id} 
+            className={`${styles.itemWrapper} ${ws.active ? styles.activeWrapper : ''}`}
+            onClick={() => selectWorkspace(ws.id)}
+          >
             <div className={`${styles.workspaceIcon} ${ws.active ? styles.active : ''}`}>
               {ws.name}
             </div>
@@ -29,7 +61,7 @@ export default function WorkspaceRail() {
           </div>
         ))}
         
-        <div className={styles.itemWrapper}>
+        <div className={styles.itemWrapper} onClick={() => router.push('/onboarding')}>
           <div className={styles.addWorkspace}>+</div>
           {isExpanded && <span className={styles.itemText}>Add Workspace</span>}
         </div>

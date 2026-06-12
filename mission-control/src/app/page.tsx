@@ -6,9 +6,18 @@ import ContextMemory from '@/components/ContextMemory';
 import TaskQueue from '@/components/TaskQueue';
 import InfrastructureBar from '@/components/InfrastructureBar';
 import WorkspaceRail from '@/components/WorkspaceRail';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { redirect } from "next/navigation";
 import styles from './page.module.css';
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    redirect('/login');
+  }
+
   return (
     <div className={styles.appWrapper}>
       <WorkspaceRail />
