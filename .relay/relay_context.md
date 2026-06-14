@@ -1,8 +1,10 @@
 # RELAY_CONTEXT
-> Auto-generated 2026-06-14T16:41:35.381Z | workspace `C:\Users\unnat\Documents\GitHub\OrbitOS` | last sync 2026-06-14T15:29:34.436Z
+> Auto-generated 2026-06-14T20:50:21.189Z | workspace `C:\Users\unnat\Documents\GitHub\OrbitOS` | last sync 2026-06-14T16:41:47.468Z
 **Do not paste raw transcripts.** This file is the handoff bundle for new agent sessions.
 ---
 ## PROJECT SUMMARY
+# Project Summary
+
 <!-- Maintained by relay compile (coding agent + relay-sync skill). -->
 
 ## Overview
@@ -22,12 +24,21 @@
 - Mission Control shows IR (handoff, tasks, decisions, failures), collaborators, agent routing chat
 - Publish to npm; install via `npm install relay-os` then `relay init`
 ## CURRENT TASKS
-- [ ] Verify `relay init` background serve on fresh machine (first-run npm install in mission-control)
-- [ ] npm publish `relay-os` when ready
-- [ ] Optional: open browser automatically after init/serve
-- [ ] E2E smoke test: init → Mission Control → register workspace → IR panels populate
-- [ ] Consider CLI spawn integration for Claude/Codex (explicitly out of scope for browser chat)
+- [x] Audit existing codebase to find insertion points for an agentic layer
+- [x] Define winning hackathon strategy (autonomous-orchestration reframe)
+- [x] Write 15-slide pitch deck content → `docs/PITCH.md`
+- [x] Add missing `LICENSE` (MIT) and include it in `package.json` `files`
+- [ ] Decide weekend hero feature: full Conductor loop vs collision detection first
+- [x] User ran `npm login` (account: jester1177)
+- [ ] npm publish `relay-os@0.1.0` — still 404 on registry after 2nd attempt; likely still blocked on 2FA/access-token (403). Waiting on user to confirm 2FA/token status and share final lines of publish output
+- [ ] Run `npm pkg fix` to normalize `bin.relay` path (remove leading `./`) and `repository.url` (`git+` prefix) before next publish
+- [ ] Re-verify `backend/node_modules` exclusion from tarball before next publish attempt
+- [ ] Build Conductor vertical slice (reuses existing spawn + callLlm + timeline):
+- [ ] Add `lib/relayCollision.js` (groupBy(path) over `memory.timeline`)
+- [ ] Add `POST /api/orchestrate` + MCP tools (`relay_dispatch`, `relay_conflicts`)
 ## OPEN DECISIONS
+- [ ] Weekend hero feature: full Conductor loop (think+decide+act+verify) vs collision detection first
+- [ ] Live demo dispatch: rely on real Claude/Codex CLI vs deterministic replay/mock
 - [ ] Whether to auto-open browser on `relay init` (currently prints URLs only)
 ## CONNECTED AGENTS
 - **Cursor** | 0 events | connected 2026-06-14T15:39:23.769Z
@@ -36,9 +47,9 @@
 - **Codex** | 0 events | connected 2026-06-14T15:39:38.507Z
 - **Antigravity** | 0 events | connected 2026-06-14T15:39:38.846Z
 ## LAST CHECKPOINT
-- **code_edit** via Cursor at 2026-06-14T15:39:23.967Z
-- File: `architecture.md`
-- Wrote architecture.md
+- **code_edit** via Cursor at 2026-06-14T16:42:06.344Z
+- File: `README.md`
+- Edited README.md
 ## RELEVANT EVENTS
 ### [artifact] Antigravity task.md | 2026-06-14T05:37:51.864Z
 Artifact updated: task.md
@@ -46,55 +57,46 @@ Artifact updated: task.md
 Artifact updated: scratchpad_au553f9c.md
 ### [artifact] Antigravity walkthrough.md | 2026-06-14T05:40:02.069Z
 Artifact updated: walkthrough.md
-### [Cursor] user | 2026-06-14T15:38:55.967Z
-how to install to npx or npm from github repo
 ### [Cursor] user | 2026-06-14T15:39:00.967Z
 ok we missed out on showing internal relay files like current tasks, decision , failures, handoff in the serve ui and also relay init doesnt launch the ui automatically in the start, i have to do relay serve seperately, so make it launch the ui as a backgroudn process with init or serve. add a collaborators section fo…
 ### [Cursor] user | 2026-06-14T15:39:18.967Z
 /relay update
-### [edit] Cursor edited project.md | 2026-06-14T15:39:23.967Z
-Wrote project.md
-### [edit] Cursor edited current_task.md | 2026-06-14T15:39:23.967Z
-Wrote current_task.md
-### [edit] Cursor edited decisions.md | 2026-06-14T15:39:23.967Z
-Wrote decisions.md
-### [edit] Cursor edited failures.md | 2026-06-14T15:39:23.967Z
-Wrote failures.md
-### [edit] Cursor edited architecture.md | 2026-06-14T15:39:23.967Z
-Wrote architecture.md
-### [Cursor] assistant | 2026-06-14T15:39:24.967Z
-Relay updated.
-
-- Synced **645 events** (247 in timeline)
-- Updated `.relay/project.md`, `current_task.md`, `decisions.md`, `failures.md`, `architecture.md`
-- Regenerated `.relay/relay_context.md`
-
-[REDACTED]
 ### [Cursor] user | 2026-06-14T15:39:25.967Z
 Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
-### [Cursor] assistant | 2026-06-14T15:39:26.967Z
-`/relay update` completed successfully.
-
-- **Sync:** 645 events harvested → 247 in timeline  
-- **IR updated:** `project.md`, `current_task.md`, `decisions.md`, `failures.md`, `architecture.md`  
-- **Handoff:** `relay_context.md` regenerated  
-
-Mission Control’s **Relay brain** sidebar should reflect this on the next …
 ### [Cursor] user | 2026-06-14T15:39:27.967Z
 Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
-### [Cursor] assistant | 2026-06-14T15:39:28.967Z
-`/relay update` completed successfully.
-
-- **Sync:** 645 events harvested → 247 in timeline  
-- **IR updated:** `project.md`, `current_task.md`, `decisions.md`, `failures.md`, `architecture.md`  
-- **Handoff:** `relay_context.md` regenerated  
-
-Mission Control’s **Relay brain** sidebar should reflect this on the next …
 ### [Cursor] user | 2026-06-14T15:39:30.967Z
 Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
-### [Cursor] assistant | 2026-06-14T15:39:31.967Z
-`relay context` finished successfully — `.relay/relay_context.md` is updated and ready for the next agent session or `/relay context`.
+### [Cursor] user | 2026-06-14T16:41:46.344Z
+i want the agents to use the npm version of this like relay init relay sync, etc and not npx relay-os so on
+### [Cursor] assistant | 2026-06-14T16:41:55.344Z
+Updating installed agent files and skill copies.
 
 [REDACTED]
+### [Cursor] assistant | 2026-06-14T16:42:00.344Z
+Updating the README agent table and regenerating generated Relay files.
+
+[REDACTED]
+### [Cursor] assistant | 2026-06-14T16:42:05.344Z
+Updating README and QUICKSTART examples for consistency.
+
+[REDACTED]
+### [edit] Cursor edited README.md | 2026-06-14T16:42:05.344Z
+Edited README.md
+### [edit] Cursor edited QUICKSTART.md | 2026-06-14T16:42:05.344Z
+Edited QUICKSTART.md
+### [edit] Cursor edited QUICKSTART.md | 2026-06-14T16:42:05.344Z
+Edited QUICKSTART.md
+### [edit] Cursor edited project.md | 2026-06-14T16:42:05.344Z
+Edited project.md
+### [edit] Cursor edited README.md | 2026-06-14T16:42:06.344Z
+Edited README.md
+### [Cursor] assistant | 2026-06-14T16:42:09.344Z
+All agent-facing instructions now use the `relay` npm binary (`relay init`, `relay sync`, `relay context .`, etc.) instead of `npx relay-os`.
+
+### What changed
+
+**Source templates** (used by `relay init` / `relay install` on any project):
+- `backend/lib/relayInstall.js` — bootstrap, patched instruction blocks, Cursor …
 ---
 _Source: `.relay/memory.json` + IR markdown. Regenerate: `relay context .` after `relay compile`._

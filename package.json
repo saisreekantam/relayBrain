@@ -30,7 +30,8 @@
     "mission-control",
     "skills",
     "scripts",
-    "docs"
+    "docs",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
