@@ -83,6 +83,26 @@ function detectCodexCli() {
   return null; // Extension-only mode
 }
 
+// ─── DETECT CLAUDE CLI ────────────────────────────────────────────────────────
+// Returns true if claude CLI is available, false if extension-only mode.
+function detectClaudeCli() {
+  try {
+    const result = spawnSync('claude', ['--version'], { shell: true, timeout: 3000, encoding: 'utf-8' });
+    if (result.status === 0) return true;
+  } catch (_) { }
+  
+  const npmGlobalBins = [
+    path.join(HOME, 'AppData', 'Roaming', 'npm', 'claude.cmd'),
+    path.join(HOME, 'AppData', 'Roaming', 'npm', 'claude'),
+    '/usr/local/bin/claude',
+    '/usr/bin/claude',
+  ];
+  for (const p of npmGlobalBins) {
+    if (fs.existsSync(p)) return true;
+  }
+  return false;
+}
+
 // ─── GENERATE & SEND HANDSHAKE TOKEN ─────────────────────────────────────────
 function sendHandshake(workspacePath, agent) {
   const safeAgent = agent.toUpperCase().replace(/ /g, '_');
@@ -133,16 +153,25 @@ function sendHandshake(workspacePath, agent) {
     config.agents[agent].codexMode = mode;
 
   } else if (agent === 'Claude Code') {
-    // Claude Code has a real CLI
-    const result = spawnSync('claude', ['--print', token], {
-      cwd: workspacePath,
-      timeout: 20000,
-      encoding: 'utf-8',
-      shell: true,
-    });
-    mode = 'cli';
-    console.log(`[Claude Code] stdout: ${result.stdout}`);
-    if (result.error) console.error(`[Claude Code] spawn error: ${result.error.message}`);
+    const hasClaudeCli = detectClaudeCli();
+    
+    if (hasClaudeCli) {
+      console.log(`[Claude Code] CLI found. Sending token via CLI...`);
+      const result = spawnSync('claude', ['--print', token], {
+        cwd: workspacePath,
+        timeout: 20000,
+        encoding: 'utf-8',
+        shell: true,
+      });
+      mode = 'cli';
+      console.log(`[Claude Code CLI] stdout: ${result.stdout}`);
+      if (result.error) console.error(`[Claude Code CLI] spawn error: ${result.error.message}`);
+    } else {
+      fs.writeFileSync(path.join(getRelayDir(workspacePath), '.handshake_claude'), token);
+      mode = 'extension-cwd-match';
+      console.log(`[Claude Code] No CLI found. Using extension mode (cwd match). Token: ${token}`);
+    }
+    config.agents[agent].claudeMode = mode;
 
   } else if (agent === 'GitHub Copilot') {
     fs.writeFileSync(path.join(getRelayDir(workspacePath), '.handshake_copilot'), token);
@@ -256,6 +285,34 @@ function discoverCopilotByWorkspaceCwd(workspacePath) {
   return mostRecentFile(files);
 }
 
+// Strategy 5 (Claude extension): find project folder based on slugified workspace path
+function discoverClaudeByWorkspaceCwd(workspacePath) {
+  const root = AGENT_ROOTS['Claude Code'];
+  if (!fs.existsSync(root)) return null;
+
+  // Claude Code slugifies the path by replacing non-alphanumeric chars with hyphens
+  // Specifically: C:\Users\Name\Path -> c--Users-Name-Path
+  let slug = workspacePath.replace(/[^a-zA-Z0-9]/g, '-');
+  if (slug.charAt(1) === '-') {
+    // lowercase drive letter in slug e.g. c--
+    slug = slug.charAt(0).toLowerCase() + slug.substring(1);
+  }
+
+  const projectDir = path.join(root, slug);
+
+  if (fs.existsSync(projectDir)) {
+    const files = findJsonlFiles(projectDir);
+    if (files.length > 0) {
+      const best = mostRecentFile(files);
+      console.log(`[Claude Code] Found project dir matching workspace slug. Using: ${best}`);
+      return best;
+    }
+  }
+
+  console.warn('[Claude Code] No slug match found. Falling back to most recent session file.');
+  return mostRecentFile(findJsonlFiles(root));
+}
+
 // Strategy 3 (Antigravity): use most-recent transcript from brain directory
 function discoverAntigravityMostRecent() {
   const root = AGENT_ROOTS['Antigravity'];
@@ -298,8 +355,13 @@ function connectAgent(workspacePath, agent) {
     }
 
   } else if (agent === 'Claude Code') {
-    // CLI was used — grep for token
-    transcriptPath = discoverByToken('Claude Code', token);
+    const claudeMode = agentConfig.claudeMode;
+    if (claudeMode === 'cli') {
+      transcriptPath = discoverByToken('Claude Code', token);
+    }
+    if (!transcriptPath) {
+      transcriptPath = discoverClaudeByWorkspaceCwd(workspacePath);
+    }
   } else if (agent === 'GitHub Copilot') {
     transcriptPath = discoverCopilotByWorkspaceCwd(workspacePath);
   }
@@ -333,6 +395,7 @@ function connectAgent(workspacePath, agent) {
     connectedAt: new Date().toISOString(),
     pendingToken: null,
     codexMode: agentConfig.codexMode || null,
+    claudeMode: agentConfig.claudeMode || null,
     copilotMode: agentConfig.copilotMode || null,
   };
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
