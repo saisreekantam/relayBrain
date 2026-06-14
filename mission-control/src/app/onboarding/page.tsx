@@ -19,7 +19,7 @@ export default function Onboarding() {
   const router = useRouter();
 
   useEffect(() => {
-    const saved = localStorage.getItem('mesh_workspaces');
+    const saved = localStorage.getItem('relay_workspaces');
     if (saved) {
       const parsed = JSON.parse(saved);
       setExistingIds(parsed.map((ws: any) => ws.id));
@@ -54,7 +54,7 @@ export default function Onboarding() {
   }, [status, session, router]);
 
   const handleAddWorkspace = (repo: Repo) => {
-    const saved = localStorage.getItem('mesh_workspaces');
+    const saved = localStorage.getItem('relay_workspaces');
     let workspaces = saved ? JSON.parse(saved) : [];
     
     // Set all others to inactive
@@ -92,7 +92,7 @@ export default function Onboarding() {
     <div className={styles.container}>
       <div className={`glass-panel ${styles.card}`}>
         <h1 className={styles.title}>Select a Repository</h1>
-        <p className={styles.subtitle}>Choose a GitHub repository to add to your Mesh workspace. This will sync its context into the shared memory bank.</p>
+        <p className={styles.subtitle}>Choose a GitHub repository to add to your Relay workspace. This will sync its context into the shared memory bank.</p>
         
         <div className={`${styles.repoList} custom-scrollbar`}>
           {repos.length === 0 ? (

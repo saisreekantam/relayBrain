@@ -21,7 +21,7 @@ export default function GroupChat() {
   useEffect(() => {
     // Poll local storage for active workspace
     const checkWorkspace = setInterval(() => {
-      const saved = localStorage.getItem('mesh_workspaces');
+      const saved = localStorage.getItem('relay_workspaces');
       if (saved) {
         const wsList = JSON.parse(saved);
         const active = wsList.find((ws: any) => ws.active);

@@ -23,21 +23,19 @@ export default function WorkspaceRail() {
   const router = useRouter();
 
   useEffect(() => {
-    const saved = localStorage.getItem('mesh_workspaces');
+    const saved = localStorage.getItem('relay_workspaces');
     if (saved) {
       setWorkspaces(JSON.parse(saved));
     } else {
-      localStorage.setItem('mesh_workspaces', JSON.stringify(defaultWorkspaces));
+      localStorage.setItem('relay_workspaces', JSON.stringify(defaultWorkspaces));
+      setWorkspaces(defaultWorkspaces);
     }
   }, []);
 
-  const selectWorkspace = (id: string) => {
-    const updated = workspaces.map(ws => ({
-      ...ws,
-      active: ws.id === id
-    }));
+  const handleSelectWorkspace = (id: string) => {
+    const updated = workspaces.map(w => ({ ...w, active: w.id === id }));
     setWorkspaces(updated);
-    localStorage.setItem('mesh_workspaces', JSON.stringify(updated));
+    localStorage.setItem('relay_workspaces', JSON.stringify(updated));
   };
 
   return (

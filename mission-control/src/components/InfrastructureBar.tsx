@@ -26,7 +26,7 @@ export default function InfrastructureBar() {
       </div>
       
       <div className={styles.metrics}>
-        <span className={styles.sysOk}>Mesh Node Online</span>
+        <span className={styles.sysOk}>Relay Node Online</span>
       </div>
     </div>
   );
