@@ -269,6 +269,10 @@
       background: linear-gradient(135deg, #1f6feb, #7c3aed);
     }
 
+    .agent-icon.cursor {
+      background: linear-gradient(135deg, #db2777, #7c3aed);
+    }
+
     .agent-name {
       font-weight: 700;
       font-size: 14px;
@@ -509,6 +513,57 @@
       color: #93c5fd;
     }
 
+    .src-cursor {
+      background: rgba(236, 72, 153, 0.2);
+      color: #f9a8d4;
+    }
+
+    .event-avatar.code_edit,
+    .event-avatar.artifact {
+      background: rgba(245, 166, 35, 0.15);
+      color: var(--warning);
+    }
+
+    .event-card.code-edit .event-content,
+    .event-card.artifact .event-content {
+      border-color: rgba(245, 166, 35, 0.35);
+    }
+
+    .edit-file {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--warning);
+      margin-bottom: 6px;
+    }
+
+    .edit-summary {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+
+    .edit-diff {
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.5;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      max-height: 240px;
+      overflow: auto;
+      white-space: pre;
+      color: var(--text-2);
+    }
+
+    .edit-diff .add {
+      color: var(--success);
+    }
+
+    .edit-diff .del {
+      color: var(--error);
+    }
+
     .event-role {
       font-size: 11px;
       color: var(--text-3);
@@ -692,6 +747,8 @@
         <button class="filter-chip" onclick="setFilter('Codex', this)">Codex</button>
         <button class="filter-chip" onclick="setFilter('Claude Code', this)">Claude</button>
         <button class="filter-chip" onclick="setFilter('GitHub Copilot', this)">Copilot</button>
+        <button class="filter-chip" onclick="setFilter('Cursor', this)">Cursor</button>
+        <button class="filter-chip" onclick="setFilter('code_edit', this)">Code Edits</button>
       </div>
       <div class="timeline" id="timeline">
         <div class="empty-state">
@@ -750,6 +807,7 @@
       { id: 'Codex', icon: '⚡', cls: 'codex', desc: 'OpenAI Codex CLI agent' },
       { id: 'Claude Code', icon: '◆', cls: 'claude', desc: 'Anthropic Claude Code CLI' },
       { id: 'GitHub Copilot', icon: '◈', cls: 'copilot', desc: 'GitHub Copilot agent sessions' },
+      { id: 'Cursor', icon: '▣', cls: 'cursor', desc: 'Cursor agent transcripts + local history' },
     ];
 
     const agentState = {};
@@ -829,8 +887,8 @@
             </div>
             <span class="agent-status ${statusCls[state.status]}">${statusLabel[state.status]}</span>
           </div>
-          ${state.status === 'handshaking' && state.token && agent.id !== 'GitHub Copilot' ? `<div class="token-box">${state.token}</div>` : ''}
-          ${state.status === 'handshaking' ? `<div style="font-size:11px;color:var(--warning);margin-bottom:8px;">${agent.id === 'GitHub Copilot' ? 'Matching the workspace Copilot session automatically…' : `Sending token to ${agent.id} CLI automatically…`}</div>` : ''}
+          ${state.status === 'handshaking' && state.token && !['GitHub Copilot', 'Cursor'].includes(agent.id) ? `<div class="token-box">${state.token}</div>` : ''}
+          ${state.status === 'handshaking' ? `<div style="font-size:11px;color:var(--warning);margin-bottom:8px;">${agent.id === 'GitHub Copilot' || agent.id === 'Cursor' ? 'Matching workspace sessions automatically…' : `Sending token to ${agent.id} CLI automatically…`}</div>` : ''}
           ${state.transcriptPath ? `<div class="agent-path" title="${state.transcriptPath}">${state.transcriptPath}</div>` : ''}
           ${state.eventCount ? `<div class="agent-event-count">✓ ${state.eventCount} events loaded</div>` : ''}
           ${state.error ? `<div class="agent-error">✗ ${state.error}</div>` : ''}
@@ -930,14 +988,19 @@
               error: null,
               token: null,
             };
-            allEvents.push(...(agentData.events || []));
-            if (agentData.artifacts) allArtifacts.push(...agentData.artifacts.map(a => ({...a, source: agentId})));
-            if (agentData.tasks) allTasks.push(...agentData.tasks.map(t => ({...t, source: agentId})));
-            if (agentData.messages) allMessages.push(...agentData.messages.map(m => ({...m, source: agentId})));
+            if (agentData.artifacts) allArtifacts.push(...agentData.artifacts.map(a => ({ ...a, source: agentId })));
+            if (agentData.tasks) allTasks.push(...agentData.tasks.map(t => ({ ...t, source: agentId })));
+            if (agentData.messages) allMessages.push(...agentData.messages.map(m => ({ ...m, source: agentId })));
           }
         }
 
-        allEvents.sort((a, b) => new Date(a.ts) - new Date(b.ts));
+        allEvents = Array.isArray(memory.timeline) && memory.timeline.length
+          ? memory.timeline
+          : Object.values(memory.agents || {})
+            .filter(a => a.status === 'connected')
+            .flatMap(a => a.events || []);
+
+        allEvents.sort((a, b) => new Date(a.ts || 0) - new Date(b.ts || 0));
         renderAgents();
         renderTimeline();
         renderMemoryDashboard();
@@ -970,6 +1033,7 @@
       if (activeFilter !== 'all') {
         events = events.filter(e => {
           if (activeFilter === 'user' || activeFilter === 'assistant') return e.role === activeFilter;
+          if (activeFilter === 'code_edit') return e.kind === 'code_edit' || e.kind === 'artifact';
           return e.source === activeFilter;
         });
       }
@@ -986,21 +1050,60 @@
         return;
       }
 
-      const srcCls = { 'Antigravity': 'src-antigravity', 'Codex': 'src-codex', 'Claude Code': 'src-claude', 'GitHub Copilot': 'src-copilot' };
+      const srcCls = {
+        'Antigravity': 'src-antigravity',
+        'Codex': 'src-codex',
+        'Claude Code': 'src-claude',
+        'GitHub Copilot': 'src-copilot',
+        'Cursor': 'src-cursor',
+      };
 
-      timeline.innerHTML = events.map(e => `
-        <div class="event-card">
-          <div class="event-avatar ${e.role}">${e.role === 'user' ? 'U' : 'A'}</div>
+      timeline.innerHTML = events.map(e => {
+        const kind = e.kind || 'message';
+        const avatar = kind === 'code_edit' ? '✎' : kind === 'artifact' ? '📄' : (e.role === 'user' ? 'U' : 'A');
+        const avatarCls = kind === 'message' ? e.role : kind;
+        const cardCls = kind === 'code_edit' ? 'code-edit' : kind === 'artifact' ? 'artifact' : '';
+
+        let body = '';
+        if (kind === 'code_edit' || kind === 'artifact') {
+          const fileLine = e.file || e.path ? `<div class="edit-file">${escHtml(e.file || e.path)}</div>` : '';
+          const summaryLine = e.summary ? `<div class="edit-summary">${escHtml(e.summary)}</div>` : '';
+          const diffLine = e.diff
+            ? `<pre class="edit-diff">${formatDiff(e.diff)}</pre>`
+            : `<div class="edit-summary">File edited at this point in the chat (no diff stored).</div>`;
+          const contentLine = kind === 'artifact' && e.content
+            ? `<div class="event-content" style="margin-top:8px;">${escHtml(e.content)}</div>`
+            : '';
+          body = `${fileLine}${summaryLine}${diffLine}${contentLine}`;
+        } else {
+          body = `<div class="event-content">${escHtml(e.content || '')}</div>`;
+        }
+
+        return `
+        <div class="event-card ${cardCls}">
+          <div class="event-avatar ${avatarCls}">${avatar}</div>
           <div class="event-body">
             <div class="event-meta">
-              <span class="event-source ${srcCls[e.source] || ''}">${e.source}</span>
-              <span class="event-role">${e.role}</span>
-              <span class="event-ts">${e.ts ? new Date(e.ts).toLocaleTimeString() : ''}</span>
+              <span class="event-source ${srcCls[e.source] || ''}">${escHtml(e.source || '')}</span>
+              <span class="event-role">${kind === 'message' ? e.role : kind.replace('_', ' ')}</span>
+              <span class="event-ts">${e.ts ? new Date(e.ts).toLocaleString() : ''}</span>
             </div>
-            <div class="event-content">${escHtml(e.content)}</div>
+            ${body}
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
+    }
+
+    function formatDiff(diff) {
+      return String(diff || '')
+        .split('\n')
+        .map(line => {
+          const safe = escHtml(line);
+          if (line.startsWith('+') && !line.startsWith('+++')) return `<span class="add">${safe}</span>`;
+          if (line.startsWith('-') && !line.startsWith('---')) return `<span class="del">${safe}</span>`;
+          return safe;
+        })
+        .join('\n');
     }
 
     // ── RENDER MEMORY DASHBOARD ──
