@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { useRelay } from '@/lib/RelayContext';
 import { AGENT_BY_ID, filterTimeline } from '@/lib/relay';
 import ActivityTimeline from './ActivityTimeline';
+import AgentSessionChat from './AgentSessionChat';
 import styles from './ProjectDashboard.module.css';
 
 const IR_TABS = [
@@ -39,7 +40,7 @@ function EditCard({ e }: { e: ReturnType<typeof filterTimeline>[0] }) {
 
 export default function ProjectDashboard() {
   const { activeWorkspace, activeProject, memory, dashboard, syncing, refresh } = useRelay();
-  const [tab, setTab] = useState<'activity' | 'edits' | 'memory' | 'settings'>('activity');
+  const [tab, setTab] = useState<'activity' | 'chat' | 'edits' | 'memory' | 'settings'>('activity');
   const [irTab, setIrTab] = useState<IrKey>('project');
 
   const timeline = memory?.timeline || [];
@@ -61,8 +62,9 @@ export default function ProjectDashboard() {
           {(
             [
               ['activity', 'Activity'],
+              ['chat', 'Agent chat'],
+              ['memory', 'All IR files'],
               ['edits', 'Code edits'],
-              ['memory', 'Memory'],
               ['settings', 'Settings'],
             ] as const
           ).map(([key, label]) => (
@@ -94,6 +96,8 @@ export default function ProjectDashboard() {
             events={timeline}
             emptyMessage="Connect an agent from the sidebar to populate the timeline."
           />
+        ) : tab === 'chat' ? (
+          <AgentSessionChat />
         ) : tab === 'edits' ? (
           <div className={`${styles.editsList} custom-scrollbar`}>
             {edits.length === 0 ? (

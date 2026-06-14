@@ -2,7 +2,8 @@ import React from 'react';
 import GlobalHeader from '@/components/GlobalHeader';
 import Sidebar from '@/components/Sidebar';
 import ProjectDashboard from '@/components/ProjectDashboard';
-import ContextMemory from '@/components/ContextMemory';
+import RelayBrainPanel from '@/components/RelayBrainPanel';
+import CollaboratorsPanel from '@/components/CollaboratorsPanel';
 import TaskQueue from '@/components/TaskQueue';
 import WorkspaceRail from '@/components/WorkspaceRail';
 import styles from './page.module.css';
@@ -22,9 +23,8 @@ export default function Home() {
           </div>
 
           <div className={`${styles.controlRoomArea} custom-scrollbar`}>
-            <div className={styles.stackPanel}>
-              <ContextMemory />
-            </div>
+            <RelayBrainPanel />
+            <CollaboratorsPanel />
             <div className={styles.stackPanel}>
               <TaskQueue />
             </div>

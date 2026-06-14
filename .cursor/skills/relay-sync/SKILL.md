@@ -1,7 +1,7 @@
 ---
 name: relay-sync
 description: >-
-  Relay cross-agent memory. User pseudo-commands: /relay update, /relay context, /relay init.
+  Relay cross-agent memory. Pseudo-commands (not native slash cmds): /relay update, /relay context, /relay init.
   Stop hooks + relay watch. Read relay_context.md at session start.
 ---
 

@@ -13,6 +13,7 @@ import {
   AGENTS,
   AgentId,
   RelayDashboard,
+  RelayDashboardIr,
   RelayMemory,
   RelayProject,
   connectAgent as apiConnect,
@@ -72,7 +73,15 @@ function memoryFingerprint(mem: RelayMemory | null): string {
 
 function dashboardFingerprint(d: RelayDashboard | null): string {
   if (!d) return '';
-  return `${d.lastSync || ''}:${d.handoff?.markdown?.length || 0}`;
+  const ir = d.ir || ({} as RelayDashboardIr);
+  return [
+    d.lastSync || '',
+    d.handoff?.markdown?.length || 0,
+    ir.currentTask?.length || 0,
+    ir.decisions?.length || 0,
+    ir.failures?.length || 0,
+    ir.project?.length || 0,
+  ].join(':');
 }
 
 export function RelayProvider({ children }: { children: React.ReactNode }) {

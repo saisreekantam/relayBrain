@@ -119,6 +119,22 @@ export interface RelayDashboard {
   activity: { total: number; offset: number; limit: number; events: RelayEvent[] };
 }
 
+export interface MissionChatMessage {
+  id: string;
+  author: string;
+  agent?: AgentId | null;
+  role: 'user' | 'system';
+  text: string;
+  ts: string;
+}
+
+export interface MissionMeta {
+  version: number;
+  collaborators: string[];
+  chat: MissionChatMessage[];
+  updatedAt?: string;
+}
+
 async function relayFetch<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
@@ -229,6 +245,19 @@ export async function pingRelay(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+export function getMissionMeta(workspacePath: string) {
+  return relayFetch<{ ok: true; meta: MissionMeta }>(
+    `/api/mission-meta?workspacePath=${encodeURIComponent(workspacePath)}`,
+  );
+}
+
+export function saveMissionMeta(workspacePath: string, meta: Partial<MissionMeta>) {
+  return relayFetch<{ ok: true; meta: MissionMeta }>(
+    `/api/mission-meta?workspacePath=${encodeURIComponent(workspacePath)}`,
+    { method: 'PUT', body: JSON.stringify(meta) },
+  );
 }
 
 export function isRedactedContent(text?: string | null): boolean {

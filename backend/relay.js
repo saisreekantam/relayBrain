@@ -80,6 +80,7 @@ function registerWorkspace(workspacePath) {
   }
 
   installRelayWorkspace(workspacePath, { packageRoot: path.join(__dirname, '..') });
+  require('./lib/relayMeta').scaffoldMissionMeta(workspacePath);
   autoConnectAgents(workspacePath);
 
   return JSON.parse(fs.readFileSync(configPath, 'utf-8'));

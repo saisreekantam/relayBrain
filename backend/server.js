@@ -13,6 +13,7 @@ const {
 } = require('./relay');
 const { buildDashboard } = require('./lib/relayDashboard');
 const { listRelayFiles, readRelayFile, writeRelayFile } = require('./lib/relayStore');
+const { readMissionMeta, writeMissionMeta } = require('./lib/relayMeta');
 const { requireApiKey, isAuthEnabled } = require('./lib/relayAuth');
 const {
   registerProject,
@@ -221,6 +222,26 @@ function createApp() {
       const workspacePath = resolveWorkspaceFromRequest(req);
       const result = getCompileBrief(workspacePath);
       res.json({ ok: true, brief: result.brief, markdown: result.markdown });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/mission-meta', (req, res) => {
+    try {
+      const workspacePath = resolveWorkspaceFromRequest(req);
+      const meta = readMissionMeta(workspacePath);
+      res.json({ ok: true, meta });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put('/api/mission-meta', (req, res) => {
+    try {
+      const workspacePath = resolveWorkspaceFromRequest(req);
+      const meta = writeMissionMeta(workspacePath, req.body || {});
+      res.json({ ok: true, meta });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

@@ -24,7 +24,8 @@ function printHelp() {
 Relay — cross-agent project memory
 
 Usage:
-  relay init [path]           Create .relay/ + auto-install all agent hooks
+  relay init [path]           Create .relay/ + hooks (starts UI in background)
+  relay init --no-serve       Init without starting Mission Control
   relay install [path]        Re-run agent hook install (idempotent)
   relay serve [--port 3001]   Start Relay API + Mission Control UI
   relay serve --api-only      API only (no Next.js UI)
@@ -70,6 +71,7 @@ function parseArgs(argv) {
     else if (a === '--ui-port') flags.uiPort = Number(args.shift());
     else if (a.startsWith('--ui-port=')) flags.uiPort = Number(a.split('=')[1]);
     else if (a === '--api-only') flags.apiOnly = true;
+    else if (a === '--no-serve') flags.noServe = true;
     else if (a.startsWith('-')) args.unshift(a);
     else positional.push(a);
   }
@@ -85,7 +87,7 @@ function ensureRelayDir(workspacePath) {
   }
 }
 
-function cmdInit(workspacePath) {
+function cmdInit(workspacePath, flags = {}) {
   const { registerWorkspace } = loadRelay();
   const { writeRelayContext } = loadRelayContext();
   const { registerProject } = require(path.join(BACKEND, 'lib', 'relayProjects'));
@@ -95,6 +97,7 @@ function cmdInit(workspacePath) {
   const { project, manifest } = registerProject(workspacePath);
 
   const uiPort = Number(process.env.RELAY_UI_PORT) || 6374;
+  const apiPort = Number(process.env.RELAY_PORT) || 3001;
   const dashboardUrl = manifest.dashboardUrl || `http://localhost:${uiPort}/?project=${project.id}`;
   const setupUrl = manifest.setupUrl || `http://localhost:${uiPort}/?setup=${project.id}`;
 
@@ -112,8 +115,33 @@ function cmdInit(workspacePath) {
   console.log(`  Setup:    ${setupUrl}`);
   console.log(`  API key:  ${project.apiKey}`);
   console.log('');
+
+  if (!flags.noServe) {
+    const { startRelayServeBackground } = require(path.join(BACKEND, 'lib', 'relayServe'));
+    startRelayServeBackground({ port: apiPort, uiPort })
+      .then((result) => {
+        if (result.alreadyRunning) {
+          console.log('  ✓ Mission Control already running');
+        } else if (result.warming) {
+          console.log('  ⏳ Mission Control starting in background (may take ~30s on first run)');
+        } else {
+          console.log('  ✓ Mission Control started in background');
+        }
+        console.log(`     UI:  http://localhost:${result.uiPort}/`);
+        console.log(`     API: http://localhost:${result.apiPort}/api/health`);
+        console.log('');
+      })
+      .catch((err) => {
+        console.warn(`  Mission Control failed to start: ${err.message || err}`);
+        console.warn('  Run `relay serve` manually.');
+        console.log('');
+      });
+  } else {
+    console.log('  Run `relay serve` for Mission Control + API.');
+    console.log('');
+  }
+
   console.log('  Save this API key — agents and MCP use it to access this project.');
-  console.log('  Run `relay serve` for Mission Control + API. Customize name in the dashboard.');
 }
 
 function cmdInstall(workspacePath) {
@@ -208,40 +236,8 @@ function cmdMcp() {
 function cmdServe(flags) {
   const port = flags.port || Number(process.env.RELAY_PORT) || 3001;
   const uiPort = flags.uiPort || Number(process.env.RELAY_UI_PORT) || 6374;
-  const { startMissionControlUi } = require(path.join(BACKEND, 'lib', 'relayUi'));
-  const serverPath = path.join(BACKEND, 'server.js');
-  const env = { ...process.env, RELAY_PORT: String(port), RELAY_UI_PORT: String(uiPort) };
-
-  let uiChild = null;
-  if (!flags.apiOnly) {
-    try {
-      uiChild = startMissionControlUi({ apiPort: port, uiPort });
-    } catch (err) {
-      console.warn(`Mission Control UI failed to start: ${err.message || err}`);
-      console.warn('Continuing with API only. Retry after: npm install (in relay-os package root)');
-    }
-  }
-
-  const apiChild = spawn(process.execPath, [serverPath], {
-    stdio: 'inherit',
-    env,
-    cwd: BACKEND,
-  });
-
-  function shutdown() {
-    if (uiChild && !uiChild.killed) uiChild.kill();
-    if (apiChild && !apiChild.killed) apiChild.kill();
-    process.exit(0);
-  }
-
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
-
-  if (uiChild) {
-    uiChild.on('exit', (code) => {
-      if (code && code !== 0) console.warn(`Mission Control exited (${code})`);
-    });
-  }
+  const { startRelayServeForeground } = require(path.join(BACKEND, 'lib', 'relayServe'));
+  startRelayServeForeground({ port, uiPort, apiOnly: flags.apiOnly });
 }
 
 function cmdOpen(flags) {
@@ -266,7 +262,7 @@ async function main() {
 
   switch (command) {
     case 'init':
-      cmdInit(resolveWorkspace(positional[1]));
+      cmdInit(resolveWorkspace(positional[1]), flags);
       break;
     case 'install':
       cmdInstall(resolveWorkspace(positional[1]));
