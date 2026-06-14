@@ -9,7 +9,10 @@ export default function Login() {
     <div className={styles.container}>
       <div className={`glass-panel ${styles.loginCard}`}>
         <div className={styles.header}>
+          <p className={styles.eyebrow}><span className={styles.statusDot}></span> Shared memory for AI teams</p>
           <h1 className={styles.logo}>/.relay</h1>
+          <h2 className={styles.tagline}>Your AI knows what you know.<br/>Now it knows what your team knows.</h2>
+          <p className={styles.subtitle}>Claude Code, Cursor, Copilot, Codex, Antigravity. Bring whatever you use. /.relay makes every AI on your team share one brain.</p>
         </div>
 
         <button 
