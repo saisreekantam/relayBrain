@@ -45,9 +45,9 @@ Options:
   --llm-only                  With compile-ir: require LLM (fail without API key)
 
 Examples:
-  npx relay-os init
-  npx relay-os serve
-  npx relay-os refresh .
+  relay init
+  relay serve
+  relay refresh .
 
 Agents: read .relay/AGENT_BOOTSTRAP.md (also RELAY.md at project root)
 
@@ -82,7 +82,7 @@ function parseArgs(argv) {
 function ensureRelayDir(workspacePath) {
   const relayDir = path.join(workspacePath, '.relay');
   if (!fs.existsSync(relayDir)) {
-    console.error('Relay not initialized. Run: npx relay-os init');
+    console.error('Relay not initialized. Run: relay init');
     process.exit(1);
   }
 }

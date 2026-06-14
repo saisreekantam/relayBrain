@@ -1,6 +1,6 @@
 # RELAY COMPILE BRIEF
 
-> Generated 2026-06-14T15:29:34.573Z | workspace `C:\Users\unnat\Documents\GitHub\OrbitOS` | 60 of 247 timeline events
+> Generated 2026-06-14T16:41:47.614Z | workspace `C:\Users\unnat\Documents\GitHub\OrbitOS` | 60 of 247 timeline events
 
 **Purpose:** Input for the **relay-sync skill** (coding agent). Use this to update IR markdown — not for handoff to a fresh agent (use `relay_context.md` for that).
 
@@ -15,7 +15,7 @@
    - `current_task.md` — `- [ ]` / `- [x]` under In progress / Next
    - `decisions.md` — open under `## Open`, resolved under `## Resolved`
    - optionally `architecture.md`, `failures.md` if the timeline supports it
-4. Run: `npx relay-os context .` to refresh `relay_context.md` for the next agent.
+4. Run: `relay context .` to refresh `relay_context.md` for the next agent.
 
 Do **not** paste this entire brief into chat when handings off — only the resulting IR + `relay_context.md`.
 
@@ -42,9 +42,20 @@ Do **not** paste this entire brief into chat when handings off — only the resu
 
 ## Overview
 
+**Relay (`relay-os`)** — cross-agent project memory for Cursor, Claude Code, Copilot, Codex, and Antigravity. One `.relay/` markdown brain, unified timeline, handoff file, npm CLI, stop hooks, optional MCP, and Mission Control UI.
+
 ## Tech stack
 
+- **CLI/API:** Node 18+, Express, file-based storage (no DB server)
+- **Mission Control:** Next.js 16, React 19, localStorage workspaces
+- **Optional:** system `sqlite3` CLI for Copilot `state.vscdb` reads; LLM keys for `compile-ir`
+
 ## Goals
+
+- Single npm install → `relay init`, hooks, skills, `.relay/`, Mission Control
+- `relay init` starts API + UI in background; `relay serve` foreground
+- Mission Control shows IR (handoff, tasks, decisions, failures), collaborators, agent routing chat
+- Publish to npm; install via `npm install relay-os` then `relay init`
 ```
 
 ### architecture.md
@@ -53,10 +64,22 @@ Do **not** paste this entire brief into chat when handings off — only the resu
 # Architecture
 
 ## Layout
--
+
+- `bin/relay.js` — CLI entry
+- `backend/relay.js` — sync, watch, connect, register
+- `backend/server.js` — Express API (:3001)
+- `backend/lib/relayServe.js` — foreground/background serve orchestration
+- `backend/lib/relayUi.js` — spawns Next.js Mission Control (:6374)
+- `backend/lib/relayMeta.js` — `.relay/mission_control.json` (collaborators, chat)
+- `mission-control/` — Next.js dashboard (Relay brain panel, agent chat, activity)
+- `~/.relay-os/projects.json` — project registry + API keys
 
 ## Boundaries
--
+
+- Sync/compile: Relay CLI (`watch`, stop hooks)
+- IR markdown updates: session agent (or `/relay update`)
+- Handoff: `relay context` → `relay_context.md`
+- Mission Control reads API; does not execute coding agents
 ```
 
 ### decisions.md
@@ -65,9 +88,19 @@ Do **not** paste this entire brief into chat when handings off — only the resu
 # Decisions
 
 ## Open
-- [ ]
+- [ ] Whether to auto-open browser on `relay init` (currently prints URLs only)
 
 ## Resolved
+
+- 2026-06-14 — Mission Control is **local-only**; removed NextAuth, MongoDB, GitHub OAuth, team group chat
+- 2026-06-14 — `relay init` starts Mission Control + API in **background**; `--no-serve` to skip
+- 2026-06-14 — `relay watch` = sync + compile only; `relay refresh` adds `relay context`
+- 2026-06-14 — Mission Control **Agent chat** = team notes + launch hints, not embedded IDE agents
+- 2026-06-14 — Collaborators + chat stored in `.relay/mission_control.json`
+- 2026-06-14 — IR files surfaced in sidebar **Relay brain** panel + **All IR files** tab
+- 2026-06-14 — npm package ships mission-control; postinstall installs UI deps
+- 2026-06-14 — Optional MCP documented per agent; always set `RELAY_WORKSPACE_PATH`
+- 2026-06-14 — No MongoDB/Redis; optional system `sqlite3` CLI only (not npm)
 ```
 
 ### current_task.md
@@ -78,10 +111,13 @@ Do **not** paste this entire brief into chat when handings off — only the resu
 <!-- Maintained by relay compile. -->
 
 ## In progress
-- [ ]
+- [ ] Verify `relay init` background serve on fresh machine (first-run npm install in mission-control)
+- [ ] npm publish `relay-os` when ready
 
 ## Next
-- [ ]
+- [ ] Optional: open browser automatically after init/serve
+- [ ] E2E smoke test: init → Mission Control → register workspace → IR panels populate
+- [ ] Consider CLI spawn integration for Claude/Codex (explicitly out of scope for browser chat)
 ```
 
 ### failures.md
@@ -90,6 +126,12 @@ Do **not** paste this entire brief into chat when handings off — only the resu
 # Failures & Anti-patterns
 
 <!-- What failed or what NOT to repeat -->
+
+- Duplicate `uiPort` declaration in `server.js` crashed API start — fixed; smoke-test after serve changes
+- Background `relay serve` test interrupted in terminal — not a code bug; use health check on port
+- Mission Control IR empty when API offline — UI now shows explicit “run relay serve / relay init” hint
+- Do not expect Cursor/Copilot/Antigravity agents to run from Mission Control browser — IDE/CLI required
+- `relay mcp` cwd is backend unless `RELAY_WORKSPACE_PATH` is set — document in MCP config
 ```
 
 ---
@@ -97,403 +139,348 @@ Do **not** paste this entire brief into chat when handings off — only the resu
 ## Timeline sample
 
 ```text
-[2026-06-14T15:36:12.981Z] Cursor | code_edit | assistant
-page.tsx — Wrote page.tsx
+[2026-06-14T15:39:23.967Z] Cursor | code_edit | assistant
+current_task.md — Wrote current_task.md
 ```
 
 ```text
-[2026-06-14T15:36:12.981Z] Cursor | code_edit | assistant
-route.ts — Wrote route.ts
+[2026-06-14T15:39:23.967Z] Cursor | code_edit | assistant
+decisions.md — Wrote decisions.md
 ```
 
 ```text
-[2026-06-14T15:36:12.981Z] Cursor | code_edit | assistant
-workspaces.ts — Wrote workspaces.ts
+[2026-06-14T15:39:23.967Z] Cursor | code_edit | assistant
+failures.md — Wrote failures.md
 ```
 
 ```text
-[2026-06-14T15:36:12.981Z] Cursor | code_edit | assistant
-package.json — Wrote package.json
+[2026-06-14T15:39:23.967Z] Cursor | code_edit | assistant
+architecture.md — Wrote architecture.md
 ```
 
 ```text
-[2026-06-14T15:36:12.981Z] Cursor | code_edit | assistant
-relayUi.js — Edited relayUi.js
-```
+[2026-06-14T15:39:24.967Z] Cursor | message | assistant
+Relay updated.
 
-```text
-[2026-06-14T15:36:14.981Z] Cursor | code_edit | assistant
-README.md — Edited README.md
-```
-
-```text
-[2026-06-14T15:36:14.981Z] Cursor | code_edit | assistant
-QUICKSTART.md — Edited QUICKSTART.md
-```
-
-```text
-[2026-06-14T15:36:14.981Z] Cursor | code_edit | assistant
-README.md — Wrote README.md
-```
-
-```text
-[2026-06-14T15:36:15.981Z] Cursor | code_edit | assistant
-DirectoryPicker.tsx — Edited DirectoryPicker.tsx
-```
-
-```text
-[2026-06-14T15:36:17.981Z] Cursor | message | assistant
-Removed all team/MongoDB/auth infrastructure from Mission Control. It’s local-only now.
-
-**Removed**
-- NextAuth, GitHub OAuth, MongoDB adapter and deps
-- Login page, auth API route, session provider
-- GitHub clone/repo onboarding flow
-- Team group chat (`GroupChat` + MongoDB `actions.ts`)
-- `workspaceActions.ts`, `auth.ts`, `mongodb.ts`, `localMode.ts`
-
-**Simplified**
-- **`/`** — opens directly, no login
-- **`/onboarding`** — local folder picker only
-- **`/api/fs`** — no auth gate
-- **`WorkspaceRail`** — sign-out removed
-- Workspaces stored in **localStorage** only
-
-**Docs** — team mode secti…
-```
-
-```text
-[2026-06-14T15:36:19.981Z] Cursor | message | user
-done everything? please ahh mention the dependencies also like sqlite3 and all if needed.
-```
-
-```text
-[2026-06-14T15:36:20.981Z] Cursor | message | assistant
-Checking project dependencies across the repo to give an accurate summary.
+- Synced **645 events** (247 in timeline)
+- Updated `.relay/project.md`, `current_task.md`, `decisions.md`, `failures.md`, `architecture.md`
+- Regenerated `.relay/relay_context.md`
 
 [REDACTED]
 ```
 
 ```text
-[2026-06-14T15:36:23.981Z] Cursor | message | assistant
-Adding a dependencies section to the docs and cleaning a stale MongoDB entry from the root lockfile.
-
-[REDACTED]
-```
-
-```text
-[2026-06-14T15:36:23.981Z] Cursor | code_edit | assistant
-README.md — Edited README.md
-```
-
-```text
-[2026-06-14T15:36:23.981Z] Cursor | code_edit | assistant
-QUICKSTART.md — Edited QUICKSTART.md
-```
-
-```text
-[2026-06-14T15:36:24.981Z] Cursor | code_edit | assistant
-README.md — Edited README.md
-```
-
-```text
-[2026-06-14T15:36:25.981Z] Cursor | message | assistant
-Yes — the packaging and team/MongoDB removal are done. Here’s the full picture:
-
-## Status
-
-| Area | Done? |
-|------|-------|
-| npm ships CLI + hooks + skills + `.relay/` + Mission Control | ✅ |
-| `relay serve` starts API + UI | ✅ |
-| Team auth / MongoDB / GitHub OAuth removed | ✅ |
-| README + QUICKSTART updated | ✅ |
-| Mission Control builds cleanly | ✅ |
-| Stale `mongodb` removed from root lockfile | ✅ |
-
-## Dependencies
-
-**Required**
-- **Node.js 18+** and **npm** — that’s it for core Relay
-
-**Installed automatically via npm**
-- **Relay API:** `express`, `cors`
-- **Mission Control:** `next`…
-```
-
-```text
-[2026-06-14T15:36:27.981Z] Cursor | message | user
-mention how to register the relay mcp as well if needed (optional) to different coding agents in the readme. make the readme cool ass like the popular projects on github with many stars
-```
-
-```text
-[2026-06-14T15:36:28.981Z] Cursor | message | assistant
-Reviewing the MCP setup and current README so we can add agent registration steps and polish the doc.
-
-[REDACTED]
-```
-
-```text
-[2026-06-14T15:36:29.981Z] Cursor | message | assistant
-Checking MCP config conventions used elsewhere in the project:
-
-[REDACTED]
-```
-
-```text
-[2026-06-14T15:36:30.981Z] Cursor | message | assistant
-Rewriting the README with a polished structure and detailed MCP setup for each agent.
-
-[REDACTED]
-```
-
-```text
-[2026-06-14T15:36:30.981Z] Cursor | code_edit | assistant
-README.md — Wrote README.md
-```
-
-```text
-[2026-06-14T15:36:31.981Z] Cursor | message | assistant
-Updated the README with a cleaner, star-repo-style layout:
-
-- **Hero + badges** — Node, MIT, supported agents, storage model  
-- **Why Relay** — one-liner value prop + agent table  
-- **How it works** — ASCII flow + layer table (including `watch` vs `refresh`)  
-- **Collapsible sections** — install options, per-agent MCP configs  
-- **Full MCP guide** — base config, local vs remote mode, registration for **Cursor**, **Claude Code**, **Copilot** (VS Code + CLI), **Codex** (`config.toml`), **Antigravity**, plus a test command  
-
-Key MCP note called out everywhere: set **`RELAY_WORKSPACE_PATH`**…
-```
-
-```text
-[2026-06-14T15:36:33.981Z] Cursor | message | user
+[2026-06-14T15:39:25.967Z] Cursor | message | user
 Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
 ```
 
 ```text
-[2026-06-14T15:36:34.981Z] Cursor | message | assistant
-The README is updated with a polished layout (hero, badges, flow diagram, collapsible sections) and a full **optional MCP** section — base config, local vs remote mode, and registration steps for Cursor, Claude Code, Copilot, VS Code, Codex, and Antigravity, plus a quick test command.
+[2026-06-14T15:39:26.967Z] Cursor | message | assistant
+`/relay update` completed successfully.
 
-The earlier API smoke test was interrupted in the background, but the duplicate `uiPort` bug in `server.js` was already fixed and the server had started cleanly before that.
+- **Sync:** 645 events harvested → 247 in timeline  
+- **IR updated:** `project.md`, `current_task.md`, `decisions.md`, `failures.md`, `architecture.md`  
+- **Handoff:** `relay_context.md` regenerated  
 
-[REDACTED]
-```
-
-```text
-[2026-06-14T15:36:36.981Z] Cursor | message | user
-how to install to npx or npm from github repo
-```
-
-```text
-[2026-06-14T15:36:39.981Z] Cursor | message | assistant
-From the GitHub repo **`AspiringPianist/OrbitOS`** (npm package name: **`relay-os`**):
-
-### Run once with npx (no global install)
-
-```bash
-cd your-project
-npx github:AspiringPianist/OrbitOS init
-npx github:AspiringPianist/OrbitOS serve
-npx github:AspiringPianist/OrbitOS watch .
-```
-
-Pin a branch, tag, or commit:
-
-```bash
-npx github:AspiringPianist/OrbitOS#main init
-npx github:AspiringPianist/OrbitOS#v0.1.0 init
-npx github:AspiringPianist/OrbitOS#abc1234 init
-```
-
-### Install globally from GitHub
-
-```bash
-npm install -g git+https://github.com/AspiringPianist/OrbitOS.git
-relay init
-relay serve
-…
-```
-
-```text
-[2026-06-14T15:36:41.981Z] Cursor | message | user
-ok we missed out on showing internal relay files like current tasks, decision , failures, handoff in the serve ui and also relay init doesnt launch the ui automatically in the start, i have to do relay serve seperately, so make it launch the ui as a backgroudn process with init or serve. add a collaborators section for this (ofcourse just some text fields where you enter the name) and also add a chat window where you can choose the coding agent you want to use from here.
-
-(is it possible though without opening the ide, if its possible let m eknow dont implement it)
-```
-
-```text
-[2026-06-14T15:36:42.981Z] Cursor | message | assistant
-Exploring the Mission Control UI and init/serve flow to identify gaps and plan improvements.
+Mission Control’s **Relay brain** sidebar should reflect this on the next sync/poll (or hit **Sync** in the UI).
 
 [REDACTED]
 ```
 
 ```text
-[2026-06-14T15:36:47.981Z] Cursor | message | assistant
-Implementing UI improvements, auto-start on init, collaborators, and an agent chat panel with a clear note that IDE agents can't run from the browser.
+[2026-06-14T15:39:27.967Z] Cursor | message | user
+Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
+```
+
+```text
+[2026-06-14T15:39:28.967Z] Cursor | message | assistant
+`/relay update` completed successfully.
+
+- **Sync:** 645 events harvested → 247 in timeline  
+- **IR updated:** `project.md`, `current_task.md`, `decisions.md`, `failures.md`, `architecture.md`  
+- **Handoff:** `relay_context.md` regenerated  
+
+Mission Control’s **Relay brain** sidebar should reflect this on the next sync/poll (or hit **Sync** in the UI).
 
 [REDACTED]
 ```
 
 ```text
-[2026-06-14T15:36:47.981Z] Cursor | code_edit | assistant
-relayServe.js — Wrote relayServe.js
+[2026-06-14T15:39:30.967Z] Cursor | message | user
+Briefly inform the user about the task result and perform any follow-up actions (if needed). If there's no follow-ups needed, don't explicitly say that.
 ```
 
 ```text
-[2026-06-14T15:36:47.981Z] Cursor | code_edit | assistant
-relayMeta.js — Wrote relayMeta.js
+[2026-06-14T15:39:31.967Z] Cursor | message | assistant
+`relay context` finished successfully — `.relay/relay_context.md` is updated and ready for the next agent session or `/relay context`.
+
+[REDACTED]
 ```
 
 ```text
-[2026-06-14T15:36:50.981Z] Cursor | code_edit | assistant
+[2026-06-14T16:41:46.344Z] Cursor | message | user
+i want the agents to use the npm version of this like relay init relay sync, etc and not npx relay-os so on
+```
+
+```text
+[2026-06-14T16:41:47.344Z] Cursor | message | assistant
+Agents should run the local `relay` CLI from npm, not `npx relay-os`. I'll find every reference and update the docs and rules to match.
+
+[REDACTED]
+```
+
+```text
+[2026-06-14T16:41:51.344Z] Cursor | message | assistant
+Checking a few more agent-facing files, then updating the source templates and installed copies.
+
+[REDACTED]
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | message | assistant
+Updating agent instruction sources and installed copies so agents use `relay` (npm binary) instead of `npx relay-os`.
+
+[REDACTED]
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | code_edit | assistant
+relayInstall.js — Edited relayInstall.js
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | code_edit | assistant
+relayInstall.js — Edited relayInstall.js
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | code_edit | assistant
+relayInstall.js — Edited relayInstall.js
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | code_edit | assistant
+relayInstall.js — Edited relayInstall.js
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | code_edit | assistant
+relayInstall.js — Edited relayInstall.js
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | code_edit | assistant
+relayInstall.js — Edited relayInstall.js
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | code_edit | assistant
+relayInstall.js — Edited relayInstall.js
+```
+
+```text
+[2026-06-14T16:41:53.344Z] Cursor | code_edit | assistant
+relayInstall.js — Edited relayInstall.js
+```
+
+```text
+[2026-06-14T16:41:54.344Z] Cursor | code_edit | assistant
+relay-hook-lib.js — Edited relay-hook-lib.js
+```
+
+```text
+[2026-06-14T16:41:54.344Z] Cursor | code_edit | assistant
+relay-hook-lib.js — Edited relay-hook-lib.js
+```
+
+```text
+[2026-06-14T16:41:54.344Z] Cursor | code_edit | assistant
+relayContext.js — Edited relayContext.js
+```
+
+```text
+[2026-06-14T16:41:54.344Z] Cursor | code_edit | assistant
+relayContext.js — Edited relayContext.js
+```
+
+```text
+[2026-06-14T16:41:54.344Z] Cursor | code_edit | assistant
+relayContext.js — Edited relayContext.js
+```
+
+```text
+[2026-06-14T16:41:54.344Z] Cursor | code_edit | assistant
 relay.js — Edited relay.js
 ```
 
 ```text
-[2026-06-14T15:36:50.981Z] Cursor | code_edit | assistant
-server.js — Edited server.js
-```
-
-```text
-[2026-06-14T15:36:50.981Z] Cursor | code_edit | assistant
-server.js — Edited server.js
-```
-
-```text
-[2026-06-14T15:36:50.981Z] Cursor | code_edit | assistant
+[2026-06-14T16:41:54.344Z] Cursor | code_edit | assistant
 relay.js — Edited relay.js
 ```
 
 ```text
-[2026-06-14T15:36:50.981Z] Cursor | code_edit | assistant
-relay.js — Edited relay.js
+[2026-06-14T16:41:55.344Z] Cursor | message | assistant
+Updating installed agent files and skill copies.
+
+[REDACTED]
 ```
 
 ```text
-[2026-06-14T15:36:50.981Z] Cursor | code_edit | assistant
-relay.js — Edited relay.js
+[2026-06-14T16:41:55.344Z] Cursor | code_edit | assistant
+CLAUDE.md — Edited CLAUDE.md
 ```
 
 ```text
-[2026-06-14T15:36:50.981Z] Cursor | code_edit | assistant
-relay.js — Edited relay.js
+[2026-06-14T16:41:55.344Z] Cursor | code_edit | assistant
+CLAUDE.md — Edited CLAUDE.md
 ```
 
 ```text
-[2026-06-14T15:36:51.981Z] Cursor | code_edit | assistant
-RelayBrainPanel.tsx — Wrote RelayBrainPanel.tsx
+[2026-06-14T16:41:55.344Z] Cursor | code_edit | assistant
+AGENTS.md — Edited AGENTS.md
 ```
 
 ```text
-[2026-06-14T15:36:51.981Z] Cursor | code_edit | assistant
-RelayBrainPanel.module.css — Wrote RelayBrainPanel.module.css
+[2026-06-14T16:41:55.344Z] Cursor | code_edit | assistant
+AGENTS.md — Edited AGENTS.md
 ```
 
 ```text
-[2026-06-14T15:36:51.981Z] Cursor | code_edit | assistant
-CollaboratorsPanel.tsx — Wrote CollaboratorsPanel.tsx
+[2026-06-14T16:41:55.344Z] Cursor | code_edit | assistant
+.cursorrules — Edited .cursorrules
 ```
 
 ```text
-[2026-06-14T15:36:51.981Z] Cursor | code_edit | assistant
-CollaboratorsPanel.module.css — Wrote CollaboratorsPanel.module.css
+[2026-06-14T16:41:55.344Z] Cursor | code_edit | assistant
+.cursorrules — Edited .cursorrules
 ```
 
 ```text
-[2026-06-14T15:36:52.981Z] Cursor | code_edit | assistant
-AgentSessionChat.tsx — Wrote AgentSessionChat.tsx
+[2026-06-14T16:41:55.344Z] Cursor | code_edit | assistant
+copilot-instructions.md — Edited copilot-instructions.md
 ```
 
 ```text
-[2026-06-14T15:36:52.981Z] Cursor | code_edit | assistant
-AgentSessionChat.module.css — Wrote AgentSessionChat.module.css
+[2026-06-14T16:41:55.344Z] Cursor | code_edit | assistant
+copilot-instructions.md — Edited copilot-instructions.md
 ```
 
 ```text
-[2026-06-14T15:36:52.981Z] Cursor | code_edit | assistant
-relay.ts — Edited relay.ts
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+relay.mdc — Edited relay.mdc
 ```
 
 ```text
-[2026-06-14T15:36:52.981Z] Cursor | code_edit | assistant
-relay.ts — Edited relay.ts
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+relay.mdc — Edited relay.mdc
 ```
 
 ```text
-[2026-06-14T15:36:52.981Z] Cursor | code_edit | assistant
-RelayContext.tsx — Edited RelayContext.tsx
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+SKILL.md — Edited SKILL.md
 ```
 
 ```text
-[2026-06-14T15:36:52.981Z] Cursor | code_edit | assistant
-page.tsx — Wrote page.tsx
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+SKILL.md — Edited SKILL.md
 ```
 
 ```text
-[2026-06-14T15:36:52.981Z] Cursor | code_edit | assistant
-page.module.css — Edited page.module.css
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+agent-install.md — Edited agent-install.md
 ```
 
 ```text
-[2026-06-14T15:36:53.981Z] Cursor | code_edit | assistant
-ProjectDashboard.tsx — Edited ProjectDashboard.tsx
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+agent-install.md — Edited agent-install.md
 ```
 
 ```text
-[2026-06-14T15:36:53.981Z] Cursor | code_edit | assistant
-ProjectDashboard.tsx — Edited ProjectDashboard.tsx
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+RELAY.md — Edited RELAY.md
 ```
 
 ```text
-[2026-06-14T15:36:53.981Z] Cursor | code_edit | assistant
-ProjectDashboard.tsx — Edited ProjectDashboard.tsx
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+relay-hook-lib.js — Edited relay-hook-lib.js
 ```
 
 ```text
-[2026-06-14T15:36:53.981Z] Cursor | code_edit | assistant
-ProjectDashboard.tsx — Edited ProjectDashboard.tsx
+[2026-06-14T16:41:56.344Z] Cursor | code_edit | assistant
+relay-hook-lib.js — Edited relay-hook-lib.js
 ```
 
 ```text
-[2026-06-14T15:36:53.981Z] Cursor | code_edit | assistant
-RelayBrainPanel.tsx — Edited RelayBrainPanel.tsx
+[2026-06-14T16:42:00.344Z] Cursor | message | assistant
+Updating the README agent table and regenerating generated Relay files.
+
+[REDACTED]
 ```
 
 ```text
-[2026-06-14T15:36:54.981Z] Cursor | code_edit | assistant
-RelayBrainPanel.tsx — Edited RelayBrainPanel.tsx
+[2026-06-14T16:42:00.344Z] Cursor | code_edit | assistant
+README.md — Edited README.md
 ```
 
 ```text
-[2026-06-14T15:36:54.981Z] Cursor | code_edit | assistant
-relay.js — Edited relay.js
+[2026-06-14T16:42:00.344Z] Cursor | code_edit | assistant
+QUICKSTART.md — Edited QUICKSTART.md
 ```
 
 ```text
-[2026-06-14T15:36:55.981Z] Cursor | code_edit | assistant
-RelayContext.tsx — Edited RelayContext.tsx
+[2026-06-14T16:42:00.344Z] Cursor | code_edit | assistant
+relay-context.js — Edited relay-context.js
 ```
 
 ```text
-[2026-06-14T15:36:56.981Z] Cursor | message | assistant
-Here’s what changed and the honest answer on agent chat from the UI.
+[2026-06-14T16:42:05.344Z] Cursor | message | assistant
+Updating README and QUICKSTART examples for consistency.
 
-## Implemented
-
-**`relay init` now starts Mission Control in the background** (API + UI). First run may take ~30s while deps install. Skip with:
-```bash
-relay init --no-serve
-```
-
-**Relay brain always visible** — right sidebar **RELAY BRAIN** panel shows Handoff, Current task, Decisions, Failures, Project (accordion). **All IR files** tab in the center still has the full split view.
-
-**Collaborators** — sidebar panel; names saved to `.relay/mission_control.json`.
-
-**Agent chat tab** — pick Cursor / Claude / Copilot / Codex …
+[REDACTED]
 ```
 
 ```text
-[2026-06-14T15:36:59.981Z] Cursor | message | user
-/relay update
+[2026-06-14T16:42:05.344Z] Cursor | code_edit | assistant
+README.md — Edited README.md
+```
+
+```text
+[2026-06-14T16:42:05.344Z] Cursor | code_edit | assistant
+README.md — Edited README.md
+```
+
+```text
+[2026-06-14T16:42:05.344Z] Cursor | code_edit | assistant
+QUICKSTART.md — Edited QUICKSTART.md
+```
+
+```text
+[2026-06-14T16:42:05.344Z] Cursor | code_edit | assistant
+QUICKSTART.md — Edited QUICKSTART.md
+```
+
+```text
+[2026-06-14T16:42:05.344Z] Cursor | code_edit | assistant
+project.md — Edited project.md
+```
+
+```text
+[2026-06-14T16:42:06.344Z] Cursor | code_edit | assistant
+README.md — Edited README.md
+```
+
+```text
+[2026-06-14T16:42:09.344Z] Cursor | message | assistant
+All agent-facing instructions now use the `relay` npm binary (`relay init`, `relay sync`, `relay context .`, etc.) instead of `npx relay-os`.
+
+### What changed
+
+**Source templates** (used by `relay init` / `relay install` on any project):
+- `backend/lib/relayInstall.js` — bootstrap, patched instruction blocks, Cursor rule
+- `backend/lib/relayContext.js` — compile brief + context footer text
+- `backend/hooks/relay-hook-lib.js` — stop-hook follow-up + fallback invocation
+- `bin/relay.js` — help examples and error messages
+- `skills/relay-sync/*` — skill source copied into projects
+
+**This works…
 ```

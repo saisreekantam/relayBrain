@@ -21,7 +21,7 @@
 Execute in the **project root**:
 
 ```bash
-npx relay-os init
+relay init
 ```
 
 This automatically:
@@ -44,7 +44,7 @@ After `init` succeeds, re-read this file and continue at section 3.
 3. Respect **CURRENT TASKS** and **OPEN DECISIONS**.
 
 ```bash
-npx relay-os context .
+relay context .
 ```
 
 ---
@@ -57,7 +57,7 @@ Not native slash commands — a **convention** agents learn from patched instruc
 |-----------|--------|
 | `/relay update` | sync → compile → update IR from `compile_brief.md` → `relay context .` |
 | `/relay context` | Read `.relay/relay_context.md` (regenerate with `relay context .` if needed) |
-| `/relay init` | Run `npx relay-os init` if Relay not installed |
+| `/relay init` | Run `relay init` if Relay not installed |
 
 ---
 
@@ -86,7 +86,7 @@ Hand the next agent only `.relay/relay_context.md`.
 ## 7. Optional UI
 
 ```bash
-npx relay-os serve
+relay serve
 ```
 
 Open http://localhost:3001/

@@ -32,9 +32,9 @@ Every coding agent wants its own instruction file — `CLAUDE.md`, `.cursorrules
 
 ```bash
 cd your-project
-npx relay-os init          # .relay/, hooks, prompts, API key
-npx relay-os serve         # Mission Control → :6374  ·  API → :3001
-npx relay-os watch .       # background sync (keep running)
+relay init          # .relay/, hooks, prompts, API key
+relay serve         # Mission Control → :6374  ·  API → :3001
+relay watch .       # background sync (keep running)
 ```
 
 Work in any agent. Stop hooks (or `/relay update`) refresh IR markdown. Switch agents → `/relay context` or read `.relay/relay_context.md`.
@@ -44,7 +44,7 @@ Work in any agent. Stop hooks (or `/relay update`) refresh IR markdown. Switch a
 
 | Method | Command |
 |--------|---------|
-| npm | `npx relay-os init` |
+| npm | `relay init` |
 | local dev | `npm link` in this repo, then `relay init` |
 | GitHub | `npx github:AspiringPianist/OrbitOS init` |
 
@@ -119,7 +119,7 @@ Registry (all projects): `~/.relay-os/projects.json`
 |-----|------------|
 | `/relay update` | sync → compile → update IR → `relay context .` |
 | `/relay context` | read `.relay/relay_context.md` |
-| `/relay init` | run `npx relay-os init` if missing |
+| `/relay init` | run `relay init` if missing |
 
 Terminal shortcut: `relay refresh .` ≈ `/relay update`
 
@@ -320,7 +320,7 @@ RELAY_WORKSPACE_PATH = "/absolute/path/to/your-project"
 
 ```bash
 # Should print: relay-mcp started (local mode, workspace: ...)
-RELAY_WORKSPACE_PATH=/path/to/project npx relay-os mcp
+RELAY_WORKSPACE_PATH=/path/to/project relay mcp
 ```
 
 ---

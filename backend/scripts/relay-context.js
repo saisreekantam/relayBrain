@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** @deprecated Use: npx relay-os context [path] [--print] */
+/** @deprecated Use: relay context [path] [--print] */
 const { spawnSync } = require('child_process');
 const path = require('path');
 

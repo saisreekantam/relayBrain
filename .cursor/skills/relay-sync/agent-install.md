@@ -3,7 +3,7 @@
 **Do not follow these manually.** Run:
 
 ```bash
-npx relay-os init
+relay init
 ```
 
 That patches all agent files with a `<!-- BEGIN:relay-os -->` block and installs Cursor skill + rule.
@@ -11,7 +11,7 @@ That patches all agent files with a `<!-- BEGIN:relay-os -->` block and installs
 Re-apply after Relay upgrade:
 
 ```bash
-npx relay-os install
+relay install
 ```
 
 Agents: read `.relay/AGENT_BOOTSTRAP.md` every session.

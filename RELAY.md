@@ -7,7 +7,7 @@ Cross-agent project memory for this repo.
 **User pseudo-commands:** `/relay update` · `/relay context` · `/relay init`
 
 ```bash
-npx relay-os init
-npx relay-os watch .
-npx relay-os refresh .
+relay init
+relay watch .
+relay refresh .
 ```

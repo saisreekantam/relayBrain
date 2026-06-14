@@ -15,7 +15,7 @@ Not built-in slash commands — a project convention the user types so you recog
 |-----------|---------|
 | `/relay update` or `relay update` | `relay sync .` → `relay compile .` → read `compile_brief.md` → update IR markdown → `relay context .` |
 | `/relay context` or `relay context` | Read `.relay/relay_context.md` |
-| `/relay init` or `relay init` | Run `npx relay-os init` if missing |
+| `/relay init` or `relay init` | Run `relay init` if missing |
 
 Reply briefly when done (e.g. "Relay updated.").
 

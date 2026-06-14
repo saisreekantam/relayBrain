@@ -8,7 +8,7 @@ One install gives you the CLI, agent hooks, `.relay/` scaffolding, and Mission C
 
 ```bash
 cd your-project
-npx relay-os init
+relay init
 ```
 
 **`relay init` installs everything:**
@@ -31,8 +31,8 @@ Save the API key printed at init — Mission Control and MCP use it.
 ## 2. Run Relay
 
 ```bash
-npx relay-os serve          # API :3001 + Mission Control :6374
-npx relay-os watch .        # background transcript sync
+relay serve          # API :3001 + Mission Control :6374
+relay watch .        # background transcript sync
 ```
 
 Open Mission Control at **http://localhost:6374** (printed by `relay init` / `relay serve`).
@@ -63,7 +63,7 @@ Not native slash commands — phrases agents recognize from patched instruction 
 |-----------|------------|
 | `/relay update` | sync → compile → update IR from `compile_brief.md` → `relay context .` |
 | `/relay context` | Read `.relay/relay_context.md` |
-| `/relay init` | Run `npx relay-os init` if `.relay/` missing |
+| `/relay init` | Run `relay init` if `.relay/` missing |
 
 Terminal equivalent: `relay refresh .` ≈ `/relay update`
 

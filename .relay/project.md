@@ -17,4 +17,4 @@
 - Single npm install → `relay init`, hooks, skills, `.relay/`, Mission Control
 - `relay init` starts API + UI in background; `relay serve` foreground
 - Mission Control shows IR (handoff, tasks, decisions, failures), collaborators, agent routing chat
-- Publish to npm; install via `npx relay-os` or `npx github:AspiringPianist/OrbitOS`
+- Publish to npm; install via `npm install relay-os` then `relay init`

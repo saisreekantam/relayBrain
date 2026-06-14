@@ -9,7 +9,7 @@ This project uses **Relay** for cross-agent memory. Do not ask the user to confi
 | Session start | Read `.relay/relay_context.md` (handoff). Never paste raw transcripts. |
 | After agent work | **You** update `.relay/*.md` from `compile_brief.md` (stop hook triggers this) |
 | Background sync | `relay watch .` keeps `memory.json` + `compile_brief.md` fresh |
-| Not installed? | Run `npx relay-os init` in project root |
+| Not installed? | Run `relay init` in project root |
 
 **Stop hooks:** Cursor, Claude Code, Codex, Copilot CLI, Antigravity — installed by `relay init`.
 
@@ -23,9 +23,9 @@ When the user sends any of these phrases (with or without a leading `/`), treat 
 |-----------|--------|
 | `/relay update` or `relay update` | `relay sync .` → `relay compile .` → read `.relay/compile_brief.md` → update `.relay/project.md`, `current_task.md`, `decisions.md`, `failures.md` → `relay context .` → confirm "Relay updated." |
 | `/relay context` or `relay context` | Read `.relay/relay_context.md` (run `relay context .` first if stale). Summarize handoff briefly. |
-| `/relay init` or `relay init` | Run `npx relay-os init` in project root if `.relay/` missing; else confirm already installed. |
+| `/relay init` or `relay init` | Run `relay init` in project root if `.relay/` missing; else confirm already installed. |
 
-Use `npx relay-os` if `relay` is not on PATH. Do not ask the user to edit agent config files manually.
+Use `npx relay` if the `relay` command is not on PATH. Do not ask the user to edit agent config files manually.
 
 Cursor: `@relay-sync` skill at `.cursor/skills/relay-sync/`.
 

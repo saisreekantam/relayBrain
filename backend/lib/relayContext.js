@@ -336,7 +336,7 @@ function renderCompileBriefMarkdown(brief) {
     '   - `current_task.md` — `- [ ]` / `- [x]` under In progress / Next',
     '   - `decisions.md` — open under `## Open`, resolved under `## Resolved`',
     '   - optionally `architecture.md`, `failures.md` if the timeline supports it',
-    '4. Run: `npx relay-os context .` to refresh `relay_context.md` for the next agent.',
+    '4. Run: `relay context .` to refresh `relay_context.md` for the next agent.',
     '',
     'Do **not** paste this entire brief into chat when handings off — only the resulting IR + `relay_context.md`.',
     '',
@@ -361,7 +361,7 @@ function renderCompileBriefMarkdown(brief) {
   lines.push('---', '', '## Timeline sample', '');
 
   if (!brief.timelineSample.length) {
-    lines.push('_Empty — run `npx relay-os sync .` first._');
+    lines.push('_Empty — run `relay sync .` first._');
   } else {
     for (const block of brief.timelineSample) {
       lines.push('```text', block, '```', '');
@@ -487,7 +487,7 @@ function renderRelayContextMarkdown(ctx) {
   lines.push(
     '---',
     '',
-    '_Source: `.relay/memory.json` + IR markdown. Regenerate: `npx relay-os context .` after `relay compile`._',
+    '_Source: `.relay/memory.json` + IR markdown. Regenerate: `relay context .` after `relay compile`._',
   );
 
   return lines.filter(Boolean).join('\n');

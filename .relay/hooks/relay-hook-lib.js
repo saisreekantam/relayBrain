@@ -13,7 +13,7 @@ const AGENT_FOLLOWUP = `Relay IR update (required — do not ask the user):
    - \`decisions.md\` — open + resolved decisions
    - \`failures.md\` — what failed or not to repeat
    - \`architecture.md\` — only if the timeline changed architecture
-3. Run \`relay context .\` (or \`npx relay-os context .\`)
+3. Run \`relay context .\`
 4. Reply only: Relay memory updated.`;
 
 const CONTINUATION_MARKER = '.relay-hook-continuing';
@@ -38,7 +38,7 @@ function getRelayInvocation(workspacePath) {
   } catch (_) {
     /* fallback */
   }
-  return { cmd: 'npx', argsPrefix: ['relay-os'] };
+  return { cmd: 'npx', argsPrefix: ['relay'] };
 }
 
 function loadConfig(workspacePath) {
