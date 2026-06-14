@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Relay — Agent Memory Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet" />
   <style>
     :root {
       --bg: #0a0b0d;
@@ -26,7 +29,11 @@
       --mono: 'JetBrains Mono', monospace;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       background: var(--bg);
@@ -57,7 +64,12 @@
       -webkit-text-fill-color: transparent;
     }
 
-    .logo-sub { font-size: 12px; color: var(--text-2); font-weight: 400; margin-left: 4px; }
+    .logo-sub {
+      font-size: 12px;
+      color: var(--text-2);
+      font-weight: 400;
+      margin-left: 4px;
+    }
 
     .header-status {
       margin-left: auto;
@@ -68,11 +80,29 @@
       color: var(--text-2);
     }
 
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); }
-    .dot.live { background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite; }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-3);
+    }
+
+    .dot.live {
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+      animation: pulse 2s infinite;
+    }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
     }
 
     /* ── LEFT PANEL ── */
@@ -113,7 +143,10 @@
       transition: border-color 0.2s;
       margin-bottom: 10px;
     }
-    .ws-input:focus { border-color: var(--accent); }
+
+    .ws-input:focus {
+      border-color: var(--accent);
+    }
 
     .btn {
       width: 100%;
@@ -134,16 +167,32 @@
       background: var(--accent);
       color: white;
     }
-    .btn-primary:hover { background: #7c75ff; }
-    .btn-primary:disabled { background: var(--border); cursor: not-allowed; color: var(--text-3); }
+
+    .btn-primary:hover {
+      background: #7c75ff;
+    }
+
+    .btn-primary:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+      color: var(--text-3);
+    }
 
     .btn-outline {
       background: transparent;
       color: var(--text);
       border: 1px solid var(--border);
     }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-outline:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
 
     /* ── WORKSPACE BADGE ── */
     .ws-badge {
@@ -167,7 +216,9 @@
       transition: border-color 0.2s;
     }
 
-    .agent-card:hover { border-color: var(--accent); }
+    .agent-card:hover {
+      border-color: var(--accent);
+    }
 
     .agent-card.connected {
       border-color: var(--success);
@@ -202,12 +253,32 @@
       flex-shrink: 0;
     }
 
-    .agent-icon.antigravity { background: linear-gradient(135deg, #667eea, #764ba2); }
-    .agent-icon.codex { background: linear-gradient(135deg, #11998e, #38ef7d); }
-    .agent-icon.claude { background: linear-gradient(135deg, #f7971e, #ffd200); }
+    .agent-icon.antigravity {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
 
-    .agent-name { font-weight: 700; font-size: 14px; }
-    .agent-desc { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+    .agent-icon.codex {
+      background: linear-gradient(135deg, #11998e, #38ef7d);
+    }
+
+    .agent-icon.claude {
+      background: linear-gradient(135deg, #f7971e, #ffd200);
+    }
+
+    .agent-icon.copilot {
+      background: linear-gradient(135deg, #1f6feb, #7c3aed);
+    }
+
+    .agent-name {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .agent-desc {
+      font-size: 11px;
+      color: var(--text-2);
+      margin-top: 2px;
+    }
 
     .agent-status {
       margin-left: auto;
@@ -218,16 +289,31 @@
       border-radius: 20px;
     }
 
-    .status-idle { background: rgba(255,255,255,0.05); color: var(--text-3); }
-    .status-handshaking { background: var(--warning-dim); color: var(--warning); }
-    .status-connected { background: var(--success-dim); color: var(--success); }
-    .status-error { background: var(--error-dim); color: var(--error); }
+    .status-idle {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-3);
+    }
+
+    .status-handshaking {
+      background: var(--warning-dim);
+      color: var(--warning);
+    }
+
+    .status-connected {
+      background: var(--success-dim);
+      color: var(--success);
+    }
+
+    .status-error {
+      background: var(--error-dim);
+      color: var(--error);
+    }
 
     .agent-path {
       font-size: 10px;
       font-family: var(--mono);
       color: var(--text-2);
-      background: rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.04);
       border-radius: 4px;
       padding: 4px 8px;
       margin-bottom: 8px;
@@ -242,10 +328,23 @@
       margin-bottom: 8px;
     }
 
-    .agent-error { font-size: 11px; color: var(--error); margin-bottom: 8px; word-break: break-word; }
+    .agent-error {
+      font-size: 11px;
+      color: var(--error);
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
 
-    .agent-btns { display: flex; gap: 6px; }
-    .agent-btns .btn { flex: 1; font-size: 11px; padding: 7px; }
+    .agent-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .agent-btns .btn {
+      flex: 1;
+      font-size: 11px;
+      padding: 7px;
+    }
 
     /* ── TOKEN DISPLAY ── */
     .token-box {
@@ -275,9 +374,22 @@
       gap: 12px;
     }
 
-    .memory-header h2 { font-size: 15px; font-weight: 700; }
-    .memory-header p { font-size: 12px; color: var(--text-2); }
-    .memory-header .btn { width: auto; padding: 8px 16px; font-size: 12px; margin-left: auto; }
+    .memory-header h2 {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .memory-header p {
+      font-size: 12px;
+      color: var(--text-2);
+    }
+
+    .memory-header .btn {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 12px;
+      margin-left: auto;
+    }
 
     .memory-filters {
       display: flex;
@@ -298,8 +410,16 @@
       color: var(--text-2);
       transition: all 0.2s;
     }
-    .filter-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-    .filter-chip:hover { border-color: var(--accent); }
+
+    .filter-chip.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .filter-chip:hover {
+      border-color: var(--accent);
+    }
 
     .timeline {
       flex: 1;
@@ -317,8 +437,15 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .event-avatar {
@@ -333,10 +460,20 @@
       font-weight: 700;
     }
 
-    .event-avatar.user { background: var(--accent-dim); color: var(--accent); }
-    .event-avatar.assistant { background: var(--success-dim); color: var(--success); }
+    .event-avatar.user {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
 
-    .event-body { flex: 1; min-width: 0; }
+    .event-avatar.assistant {
+      background: var(--success-dim);
+      color: var(--success);
+    }
+
+    .event-body {
+      flex: 1;
+      min-width: 0;
+    }
 
     .event-meta {
       display: flex;
@@ -352,12 +489,37 @@
       border-radius: 4px;
     }
 
-    .src-antigravity { background: rgba(102, 126, 234, 0.2); color: #a5b4fc; }
-    .src-codex { background: rgba(17, 153, 142, 0.2); color: #6ee7b7; }
-    .src-claude { background: rgba(247, 151, 30, 0.2); color: #fcd34d; }
+    .src-antigravity {
+      background: rgba(102, 126, 234, 0.2);
+      color: #a5b4fc;
+    }
 
-    .event-role { font-size: 11px; color: var(--text-3); }
-    .event-ts { font-size: 10px; color: var(--text-3); margin-left: auto; font-family: var(--mono); }
+    .src-codex {
+      background: rgba(17, 153, 142, 0.2);
+      color: #6ee7b7;
+    }
+
+    .src-claude {
+      background: rgba(247, 151, 30, 0.2);
+      color: #fcd34d;
+    }
+
+    .src-copilot {
+      background: rgba(31, 111, 235, 0.2);
+      color: #93c5fd;
+    }
+
+    .event-role {
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    .event-ts {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-left: auto;
+      font-family: var(--mono);
+    }
 
     .event-content {
       font-size: 13px;
@@ -381,19 +543,36 @@
       color: var(--text-3);
     }
 
-    .empty-state .icon { font-size: 48px; }
-    .empty-state h3 { font-size: 16px; color: var(--text-2); }
-    .empty-state p { font-size: 13px; text-align: center; max-width: 300px; line-height: 1.6; }
+    .empty-state .icon {
+      font-size: 48px;
+    }
+
+    .empty-state h3 {
+      font-size: 16px;
+      color: var(--text-2);
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      text-align: center;
+      max-width: 300px;
+      line-height: 1.6;
+    }
 
     .spinner {
       width: 16px;
       height: 16px;
-      border: 2px solid rgba(255,255,255,0.2);
+      border: 2px solid rgba(255, 255, 255, 0.2);
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .toast {
       position: fixed;
@@ -411,15 +590,42 @@
       animation: slideIn 0.3s ease;
       max-width: 360px;
     }
-    .toast.success { border-color: var(--success); }
-    .toast.error { border-color: var(--error); }
-    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .toast.success {
+      border-color: var(--success);
+    }
+
+    .toast.error {
+      border-color: var(--error);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
   </style>
 </head>
+
 <body>
   <!-- HEADER -->
   <header>
@@ -477,6 +683,7 @@
       <button class="filter-chip" onclick="setFilter('Antigravity', this)">Antigravity</button>
       <button class="filter-chip" onclick="setFilter('Codex', this)">Codex</button>
       <button class="filter-chip" onclick="setFilter('Claude Code', this)">Claude Code</button>
+      <button class="filter-chip" onclick="setFilter('GitHub Copilot', this)">GitHub Copilot</button>
       <button class="filter-chip" onclick="setFilter('user', this)">User Only</button>
       <button class="filter-chip" onclick="setFilter('assistant', this)">Assistant Only</button>
     </div>
@@ -497,8 +704,9 @@
 
     const AGENTS = [
       { id: 'Antigravity', icon: '⬡', cls: 'antigravity', desc: 'Antigravity IDE agent' },
-      { id: 'Codex',       icon: '⚡', cls: 'codex',       desc: 'OpenAI Codex CLI agent' },
-      { id: 'Claude Code', icon: '◆', cls: 'claude',       desc: 'Anthropic Claude Code CLI' },
+      { id: 'Codex', icon: '⚡', cls: 'codex', desc: 'OpenAI Codex CLI agent' },
+      { id: 'Claude Code', icon: '◆', cls: 'claude', desc: 'Anthropic Claude Code CLI' },
+      { id: 'GitHub Copilot', icon: '◈', cls: 'copilot', desc: 'GitHub Copilot agent sessions' },
     ];
 
     const agentState = {};
@@ -578,18 +786,19 @@
             </div>
             <span class="agent-status ${statusCls[state.status]}">${statusLabel[state.status]}</span>
           </div>
-          ${state.status === 'handshaking' && state.token ? `<div class="token-box">${state.token}</div><div style="font-size:11px;color:var(--warning);margin-bottom:8px;">Sending token to ${agent.id} CLI automatically…</div>` : ''}
+          ${state.status === 'handshaking' && state.token && agent.id !== 'GitHub Copilot' ? `<div class="token-box">${state.token}</div>` : ''}
+          ${state.status === 'handshaking' ? `<div style="font-size:11px;color:var(--warning);margin-bottom:8px;">${agent.id === 'GitHub Copilot' ? 'Matching the workspace Copilot session automatically…' : `Sending token to ${agent.id} CLI automatically…`}</div>` : ''}
           ${state.transcriptPath ? `<div class="agent-path" title="${state.transcriptPath}">${state.transcriptPath}</div>` : ''}
           ${state.eventCount ? `<div class="agent-event-count">✓ ${state.eventCount} events loaded</div>` : ''}
           ${state.error ? `<div class="agent-error">✗ ${state.error}</div>` : ''}
           <div class="agent-btns">
-            ${state.status !== 'connected' 
-              ? `<button class="btn btn-primary" onclick="startHandshake('${agent.id}')" ${state.status === 'handshaking' || !workspacePath ? 'disabled' : ''}>
+            ${state.status !== 'connected'
+            ? `<button class="btn btn-primary" onclick="startHandshake('${agent.id}')" ${state.status === 'handshaking' || !workspacePath ? 'disabled' : ''}>
                   ${state.status === 'handshaking' ? '<div class="spinner"></div> Connecting...' : '⚡ Connect'}
                 </button>`
-              : `<button class="btn btn-outline" onclick="startHandshake('${agent.id}')">↻ Reconnect</button>
+            : `<button class="btn btn-outline" onclick="startHandshake('${agent.id}')">↻ Reconnect</button>
                  <button class="btn btn-primary" onclick="syncMemory()">Sync</button>`
-            }
+          }
           </div>
         `;
         container.appendChild(card);
@@ -604,7 +813,7 @@
       renderAgents();
 
       try {
-        // Step 1: Generate token + auto-send to CLI
+        // Step 1: Generate token and trigger the agent-specific connection flow
         const hsRes = await fetch(`${API}/api/handshake`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -615,7 +824,7 @@
         agentState[agentId].token = hsData.token;
         renderAgents();
 
-        // Step 2: Wait briefly for CLI to write transcript, then grep + connect
+        // Step 2: Wait briefly for the session to appear, then connect
         await new Promise(r => setTimeout(r, 2000));
 
         const connRes = await fetch(`${API}/api/connect`, {
@@ -720,14 +929,14 @@
           <div class="empty-state">
             <div class="icon">${allEvents.length === 0 ? '🔗' : '🔍'}</div>
             <h3>${allEvents.length === 0 ? 'No Memory Loaded' : 'No Results'}</h3>
-            <p>${allEvents.length === 0 
-              ? 'Connect at least one agent to populate the memory timeline.'
-              : 'No events match the current filter.'}</p>
+            <p>${allEvents.length === 0
+            ? 'Connect at least one agent to populate the memory timeline.'
+            : 'No events match the current filter.'}</p>
           </div>`;
         return;
       }
 
-      const srcCls = { 'Antigravity': 'src-antigravity', 'Codex': 'src-codex', 'Claude Code': 'src-claude' };
+      const srcCls = { 'Antigravity': 'src-antigravity', 'Codex': 'src-codex', 'Claude Code': 'src-claude', 'GitHub Copilot': 'src-copilot' };
 
       timeline.innerHTML = events.map(e => `
         <div class="event-card">
@@ -746,7 +955,7 @@
 
     // ── HELPERS ──
     function escHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function showToast(msg, type = 'success') {
@@ -770,4 +979,5 @@
     setInterval(() => syncMemory(false), 5000);
   </script>
 </body>
+
 </html>
