@@ -233,6 +233,13 @@ a {
 .node-claude { top: 80px; right: 7%; }
 .node-codex { bottom: 80px; left: 10.5%; }
 .node-copilot { right: 7%; bottom: 80px; }
+.node-cursor {
+  top: 24px;
+  left: 50%;
+  flex-direction: column;
+  transform: translateX(-50%);
+  text-align: center;
+}
 
 .brain-shell {
   position: absolute;
@@ -799,6 +806,15 @@ a {
   .node-claude { top: 40px; right: 8%; }
   .node-codex { bottom: 48px; left: 8%; }
   .node-copilot { right: 8%; bottom: 48px; }
+  .node-cursor {
+    top: 13px;
+    left: 50%;
+    width: 70px;
+  }
+  .node-cursor .tool-icon {
+    width: 34px;
+    height: 34px;
+  }
   .network-caption { bottom: 16px; }
   .stream { min-height: 250px; padding: 20px; font-size: 10px; }
   .stream-line { grid-template-columns: 49px 1fr; margin-bottom: 7px; line-height: 1.55; }
