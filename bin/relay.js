@@ -35,6 +35,10 @@ Usage:
   relay context [path]        Generate relay_context.md handoff
   relay refresh [path]        sync + compile brief + context (agent updates IR)
   relay watch [path]          Background sync for all agents
+  relay graph rebuild [path]  Ingest timeline/IR into events + rebuild memory graph
+  relay graph query "<text>"  Debug retrieval (--explain, --history, --agent, --embed)
+  relay graph embed [path]   (Re)compute local embedding cache (optional, --force)
+  relay graph stats [path]   Node/edge counts, decision reversal rate, agent reputation (--json)
   relay mcp                   MCP server for .relay file access (stdio)
   relay open                  Print UI URL
 
@@ -43,6 +47,11 @@ Options:
   --print                     With context: print markdown to stdout
   --skip-ir                   With refresh: skip IR update
   --llm-only                  With compile-ir: require LLM (fail without API key)
+  --profile <tier>            With context: tiny|small|default|large (on by default since Phase 6)
+  --query <text>              With context: focus the graph section on a specific question
+  --explain                   With graph query: show why each result was ranked
+  --history                   With graph query: include superseded/expired edges
+  --agent <name>               With graph query/context: scope/weight by agent
 
 Examples:
   relay init
@@ -72,6 +81,17 @@ function parseArgs(argv) {
     else if (a.startsWith('--ui-port=')) flags.uiPort = Number(a.split('=')[1]);
     else if (a === '--api-only') flags.apiOnly = true;
     else if (a === '--no-serve') flags.noServe = true;
+    else if (a === '--profile') flags.profile = args.shift();
+    else if (a.startsWith('--profile=')) flags.profile = a.split('=')[1];
+    else if (a === '--history') flags.history = true;
+    else if (a === '--explain') flags.explain = true;
+    else if (a === '--agent') flags.agent = args.shift();
+    else if (a.startsWith('--agent=')) flags.agent = a.split('=')[1];
+    else if (a === '--force') flags.force = true;
+    else if (a === '--embed') flags.embed = true;
+    else if (a === '--json') flags.json = true;
+    else if (a === '--query') flags.query = args.shift();
+    else if (a.startsWith('--query=')) flags.query = a.split('=').slice(1).join('=');
     else if (a.startsWith('-')) args.unshift(a);
     else positional.push(a);
   }
@@ -196,7 +216,7 @@ async function cmdCompileIr(workspacePath, flags) {
 function cmdContext(workspacePath, flags) {
   ensureRelayDir(workspacePath);
   const { writeRelayContext } = loadRelayContext();
-  const result = writeRelayContext(workspacePath);
+  const result = writeRelayContext(workspacePath, { profile: flags.profile, agent: flags.agent, query: flags.query });
   if (flags.print) {
     process.stdout.write(result.markdown);
     return;
@@ -222,6 +242,87 @@ async function cmdWatch(workspacePath) {
   console.log(`✓ Relay watch active (${result.watcherCount} transcript paths)`);
   console.log('  Syncs memory + compile_brief.md — session agent updates IR via stop hooks');
   console.log('  Ctrl+C to stop');
+}
+
+function cmdGraphRebuild(workspacePath) {
+  ensureRelayDir(workspacePath);
+  const { syncGraph } = require(path.join(BACKEND, 'lib', 'relayGraph'));
+  const result = syncGraph(workspacePath);
+  console.log(`✓ Graph rebuilt: ${result.nodeCount} nodes, ${result.edgeCount} edges (${result.eventCount} events, +${result.ingestedEvents} ingested)`);
+  console.log(`  Working memory: ${result.workingMemory.goals.length} goals, ${result.workingMemory.tasks.length} tasks, ${result.workingMemory.decisions.length} decisions, ${result.workingMemory.blockers.length} blockers`);
+}
+
+async function cmdGraphQuery(queryText, workspacePath, flags) {
+  ensureRelayDir(workspacePath);
+  if (!queryText) {
+    console.error('Usage: relay graph query "<text>" [path] [--history] [--agent <name>] [--explain] [--embed]');
+    process.exit(1);
+  }
+  const opts = { history: flags.history, agent: flags.agent };
+  let results;
+  if (flags.embed) {
+    const { retrieveWithEmbeddings } = require(path.join(BACKEND, 'lib', 'relayRetrieve'));
+    results = await retrieveWithEmbeddings(workspacePath, queryText, opts);
+  } else {
+    const { retrieve } = require(path.join(BACKEND, 'lib', 'relayRetrieve'));
+    results = retrieve(workspacePath, queryText, opts);
+  }
+
+  if (!results.length) {
+    console.log('No matches. Run `relay graph rebuild` first, or try a different query.');
+    return;
+  }
+
+  for (const r of results.slice(0, 15)) {
+    console.log(`${r.score.toFixed(3)}  [${r.node.type}] ${r.node.text}`);
+    if (flags.explain) {
+      console.log(`   why: ${r.why.seed ? 'seed match' : `via ${r.why.relation} (${r.why.path.join(' → ')})`}`);
+      console.log(`   components: ${JSON.stringify(r.why.components)}`);
+    }
+  }
+}
+
+async function cmdGraphEmbed(workspacePath, flags) {
+  ensureRelayDir(workspacePath);
+  const { embedGraphNodes } = require(path.join(BACKEND, 'lib', 'relayEmbed'));
+  const result = await embedGraphNodes(workspacePath, { force: flags.force });
+  if (!result.available) {
+    console.log(`✗ Local embeddings unavailable (${result.reason || 'unknown reason'})`);
+    console.log('  Install with: npm install @huggingface/transformers (optional — BM25 retrieval keeps working without it)');
+    return;
+  }
+  console.log(`✓ Embedded ${result.embeddedCount} nodes (${result.skippedCount} already cached, ${result.totalNodes} total)`);
+}
+
+function cmdGraphStats(workspacePath, flags) {
+  ensureRelayDir(workspacePath);
+  const { loadGraphStats, renderGraphStatsText } = require(path.join(BACKEND, 'lib', 'relayGraphStats'));
+  const stats = loadGraphStats(workspacePath);
+  if (flags.json) {
+    console.log(JSON.stringify(stats, null, 2));
+  } else {
+    console.log(renderGraphStatsText(stats));
+  }
+}
+
+async function cmdGraph(positional, flags) {
+  const sub = positional[1];
+  if (sub === 'rebuild') {
+    cmdGraphRebuild(resolveWorkspace(positional[2]));
+  } else if (sub === 'query') {
+    await cmdGraphQuery(positional[2], resolveWorkspace(positional[3]), flags);
+  } else if (sub === 'embed') {
+    await cmdGraphEmbed(resolveWorkspace(positional[2]), flags);
+  } else if (sub === 'stats') {
+    cmdGraphStats(resolveWorkspace(positional[2]), flags);
+  } else {
+    console.error(`Unknown graph subcommand: ${sub || '(none)'}`);
+    console.error('Usage: relay graph rebuild [path]');
+    console.error('       relay graph query "<text>" [path] [--history] [--agent <name>] [--explain] [--embed]');
+    console.error('       relay graph embed [path] [--force]');
+    console.error('       relay graph stats [path] [--json]');
+    process.exit(1);
+  }
 }
 
 function cmdMcp() {
@@ -284,6 +385,9 @@ async function main() {
       break;
     case 'watch':
       await cmdWatch(resolveWorkspace(positional[1]));
+      break;
+    case 'graph':
+      await cmdGraph(positional, flags);
       break;
     case 'skill':
       cmdInstall(resolveWorkspace(positional[1]));

@@ -384,6 +384,25 @@ function writeCompileBrief(workspacePath, options = {}) {
   return { brief, markdown, paths: { json: jsonPath, markdown: mdPath } };
 }
 
+// Phase 6 (docs/KNOWLEDGE_GRAPH_PLAN.md §10): on by default — attaches a
+// compiled memory-graph section unless config.json explicitly sets
+// graph.enabled: false. isGraphEnabled() is the single source of truth so
+// this can never drift from the sync-time gate in backend/relay.js.
+function loadGraphBrief(workspacePath, config, options) {
+  const { isGraphEnabled } = require('./relayGraph');
+  if (!isGraphEnabled(config)) return null;
+  try {
+    const { compileForResolution } = require('./relayContextCompiler');
+    return compileForResolution(workspacePath, options.profile || 'default', {
+      query: options.query || '',
+      agent: options.agent,
+      recordAccess: options.recordAccess !== false,
+    });
+  } catch (err) {
+    return { profile: options.profile || 'default', text: '', includedNodeIds: [], usedTokens: 0, error: err.message };
+  }
+}
+
 function compileRelayContext(workspacePath, options = {}) {
   const limits = { ...DEFAULT_LIMITS, ...(options.limits || {}) };
   const relayDir = path.join(workspacePath, '.relay');
@@ -412,6 +431,9 @@ function compileRelayContext(workspacePath, options = {}) {
       RELEVANT_EVENTS: selectRelevantEvents(timeline, limits),
     },
   };
+
+  const graphBrief = loadGraphBrief(workspacePath, config, options);
+  if (graphBrief) context.graph = graphBrief;
 
   const markdown = renderRelayContextMarkdown(context);
   return { context, markdown };
@@ -481,6 +503,19 @@ function renderRelayContextMarkdown(ctx) {
       lines.push('');
       lines.push(e.content || e.summary || '');
       lines.push('');
+    }
+  }
+
+  if (ctx.graph) {
+    lines.push('', '## MEMORY GRAPH', '');
+    if (ctx.graph.error) {
+      lines.push(`_Graph compile error: ${ctx.graph.error}_`);
+    } else {
+      lines.push(
+        ctx.graph.text || '_empty — run `relay graph rebuild` to populate the memory graph._',
+        '',
+        `_profile: ${ctx.graph.profile} | ${ctx.graph.includedNodeIds.length} nodes | ~${ctx.graph.usedTokens}/${ctx.graph.tokenBudget} tokens_`,
+      );
     }
   }
 

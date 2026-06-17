@@ -66,6 +66,15 @@ function registerWorkspace(workspacePath) {
       autoUpdate: true,
       autoAgentUpdate: true,
       agents: {},
+      // On by default since Phase 6 (docs/KNOWLEDGE_GRAPH_PLAN.md §10) — set
+      // enabled: false here to opt back out to the old full-markdown-dump behavior.
+      graph: {
+        enabled: true,
+        embeddings: 'local',
+        tokenBudget: 1800,
+        contradictionHeuristic: false,
+        llmAssist: false,
+      },
     }, null, 2));
   }
 
@@ -671,6 +680,16 @@ function syncWorkspace(workspacePath) {
   memory.timeline = buildGlobalTimeline(memory.agents);
   memory.lastSync = new Date().toISOString();
   fs.writeFileSync(memoryPath, JSON.stringify(memory, null, 2));
+
+  const relayGraphLib = require('./lib/relayGraph');
+  if (relayGraphLib.isGraphEnabled(config)) {
+    try {
+      relayGraphLib.syncGraph(workspacePath);
+    } catch (err) {
+      console.warn(`[Graph] sync error: ${err.message}`);
+    }
+  }
+
   return {
     totalEvents,
     timelineCount: memory.timeline.length,
