@@ -474,3 +474,39 @@ test('ingestion end-to-end: the same contradiction recorded on two different rea
   assert.ok(useRedis, 'the feature/auth decision must remain active — a different branch must not contradict it');
   assert.equal(useRedis.status, 'active');
 });
+
+// --- resolveDecisionRef (explicit `relay decide supersede/contradict`) -----
+// Regression coverage for a real bug found via a CLI smoke test: a resolved
+// decision's stored text includes its date prefix as an internal storage
+// detail, so requiring an exact match silently created an event pointing at
+// a node that doesn't exist.
+
+test('resolveDecisionRef: exact stableId match is used directly when it exists', () => {
+  const nodes = [{ id: relayGraph.stableId('decision', 'Use Redis'), text: 'Use Redis' }];
+  const resolved = relayGraph.resolveDecisionRef('Use Redis', nodes);
+  assert.equal(resolved.matched, 'exact');
+  assert.equal(resolved.id, nodes[0].id);
+});
+
+test('resolveDecisionRef: falls back to a substring match when the exact text (e.g. missing a date prefix) does not exist', () => {
+  const stored = { id: 'decision:abc', text: '2026-02-01 — Use a single shared sandbox container per session' };
+  const resolved = relayGraph.resolveDecisionRef('Use a single shared sandbox container per session', [stored]);
+  assert.equal(resolved.matched, 'substring');
+  assert.equal(resolved.id, stored.id, 'must resolve to the REAL existing node, not a phantom id computed from the bare sentence');
+});
+
+test('resolveDecisionRef: reports ambiguity instead of guessing when multiple decisions match', () => {
+  const nodes = [
+    { id: 'decision:a', text: 'Use Redis for the cache layer' },
+    { id: 'decision:b', text: 'Use Redis for the session layer' },
+  ];
+  const resolved = relayGraph.resolveDecisionRef('Redis', nodes);
+  assert.equal(resolved.matched, 'ambiguous');
+  assert.equal(resolved.candidates.length, 2);
+});
+
+test('resolveDecisionRef: zero matches falls back to the literal computed id (pre-registering a not-yet-existing decision still works)', () => {
+  const resolved = relayGraph.resolveDecisionRef('A decision nobody has recorded yet', []);
+  assert.equal(resolved.matched, 'none');
+  assert.equal(resolved.id, relayGraph.stableId('decision', 'A decision nobody has recorded yet'));
+});

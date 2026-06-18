@@ -1,0 +1,204 @@
+[
+  {
+    "hash": "133e5bf7c536a7f4b7447cf70302ff20beb9e108",
+    "subject": "fix(frontend): skip Git-related API calls when no Git provider is configured (#14338)",
+    "files": [
+      "frontend/__tests__/hooks/use-git-user.test.tsx",
+      "frontend/__tests__/hooks/use-should-show-git-features.test.tsx",
+      "frontend/__tests__/use-suggested-tasks.test.ts",
+      "frontend/src/hooks/query/use-git-user.ts",
+      "frontend/src/hooks/query/use-suggested-tasks.ts",
+      "frontend/src/hooks/use-should-show-git-features.ts"
+    ]
+  },
+  {
+    "hash": "121509ebc59f4852301a467757f79639d984ab1d",
+    "subject": "feat: accept pending invitations by verified-email match at sign-in (#14759)",
+    "files": [
+      "enterprise/server/routes/auth.py",
+      "enterprise/server/services/org_invitation_service.py",
+      "enterprise/storage/org_invitation_store.py",
+      "enterprise/tests/unit/test_org_invitation_service.py"
+    ]
+  },
+  {
+    "hash": "e092b0b2b1e8de74446bf31b26a79998484c868a",
+    "subject": "ci: adopt release-please for app and cloud releases (#14718)",
+    "files": [
+      ".github/release.yml",
+      ".github/workflows/pr.yml",
+      ".github/workflows/release.yml"
+    ]
+  },
+  {
+    "hash": "5a3d1a484408f55e44a759dabe8b3d64fd23589a",
+    "subject": "fix(enterprise): return agent-settings union instead of coercing ACP→OpenHands (#14675)",
+    "files": [
+      "enterprise/server/routes/org_models.py",
+      "enterprise/server/routes/org_profiles.py",
+      "enterprise/storage/org_store.py",
+      "enterprise/tests/unit/server/routes/test_org_defaults_settings.py",
+      "enterprise/tests/unit/test_org_store.py",
+      "openhands/app_server/settings/settings_models.py",
+      "tests/unit/app_server/test_settings_agent_kind_switch.py"
+    ]
+  },
+  {
+    "hash": "43ec2b64dd9376b680374266e73363617b5d6e35",
+    "subject": "Enforce single active Jira DC link (#14536)",
+    "files": [
+      "enterprise/migrations/versions/115_enforce_single_active_jira_dc_user_link.py",
+      "enterprise/server/routes/integration/jira_dc.py",
+      "enterprise/storage/jira_dc_integration_store.py",
+      "enterprise/storage/jira_dc_user.py",
+      "enterprise/tests/unit/server/routes/test_jira_dc_integration_routes.py",
+      "enterprise/tests/unit/storage/test_jira_dc_active_link_constraint.py"
+    ]
+  },
+  {
+    "hash": "9979a989510bd131e00f9758974fa9e98667d107",
+    "subject": "fix(resolver): use literal placeholders in branch/PR naming instructions (#14521)",
+    "files": [
+      "openhands/app_server/integrations/templates/resolver/jira/jira_instructions.j2",
+      "openhands/app_server/integrations/templates/resolver/jira_dc/jira_dc_instructions.j2",
+      "openhands/app_server/integrations/templates/resolver/linear/linear_instructions.j2"
+    ]
+  },
+  {
+    "hash": "6e1e3d03d38a0b88dc5d1505eae53877af9ddf62",
+    "subject": "Fix BBDC mentioner resolution to use numeric id, and add 👀 eye reaction (#14497)",
+    "files": [
+      "enterprise/integrations/bitbucket_data_center/bitbucket_dc_manager.py",
+      "enterprise/tests/unit/integrations/bitbucket_data_center/test_bitbucket_dc_manager.py",
+      "enterprise/tests/unit/integrations/bitbucket_data_center/test_bitbucket_dc_service.py",
+      "openhands/app_server/integrations/bitbucket_data_center/service/resolver.py"
+    ]
+  },
+  {
+    "hash": "0916b25251de7d244032d95ec8a94245a5f00d0f",
+    "subject": "Update workflow shell context handling (#14478)",
+    "files": [
+      ".github/workflows/enterprise-check-migrations.yml",
+      ".github/workflows/ghcr-build.yml",
+      ".github/workflows/issue-duplicate-checker.yml",
+      ".github/workflows/npm-publish-ui.yml",
+      ".github/workflows/pr-artifacts.yml",
+      ".github/workflows/pypi-release.yml",
+      ".github/workflows/tag-image.yml"
+    ]
+  },
+  {
+    "hash": "61e3dc2cadbefd4e0649b7c141ac2335c021ad2b",
+    "subject": "fix(security): strengthen log redaction for API keys and propagated child logger records (#14174)",
+    "files": [
+      "openhands/app_server/app_conversation/live_status_app_conversation_service.py",
+      "openhands/app_server/utils/logger.py",
+      "tests/unit/app_server/utils/logger/test_logger.py"
+    ]
+  },
+  {
+    "hash": "72ac92f4aa6e2fe7229403d569882c016ec19756",
+    "subject": "refactor(settings): replace LLMAgentSettings with OpenHandsAgentSettings and drop compat shim (#14217)",
+    "files": [
+      "openhands/app_server/app_conversation/app_conversation_models.py",
+      "openhands/app_server/app_conversation/live_status_app_conversation_service.py",
+      "openhands/app_server/app_conversation/sql_app_conversation_info_service.py",
+      "openhands/app_server/settings/settings_models.py",
+      "openhands/app_server/settings/settings_router.py",
+      "openhands/app_server/utils/sdk_settings_compat.py",
+      "tests/unit/app_server/test_live_status_app_conversation_service.py",
+      "tests/unit/utils/test_sdk_settings_compat.py"
+    ]
+  },
+  {
+    "hash": "bc4706524aee708e7e6844909ba7771ec1370919",
+    "subject": "Remove unused core.schema package and KubernetesConfig (#14208)",
+    "files": [
+      "enterprise/integrations/models.py",
+      "openhands/core/config/kubernetes_config.py",
+      "openhands/core/config/openhands_config.py",
+      "openhands/core/config/utils.py",
+      "openhands/core/schema/__init__.py",
+      "openhands/core/schema/agent.py",
+      "tests/unit/core/config/test_config.py",
+      "tests/unit/core/config/test_kubernetes_config.py"
+    ]
+  },
+  {
+    "hash": "db48a7af26b6a3c6f66bd2ce886591d66ed7990f",
+    "subject": "FE: Restore flag to block traffic to /onboarding (#14166)",
+    "files": [
+      "frontend/__tests__/components/features/onboarding/onboarding-form.test.tsx",
+      "frontend/__tests__/routes/root-layout.test.tsx",
+      "frontend/src/components/features/guards/onboarding-guard.tsx",
+      "frontend/src/routes/onboarding-form.tsx",
+      "frontend/src/utils/feature-flags.ts"
+    ]
+  },
+  {
+    "hash": "8a1d80ac8fd82f5802577aa300b52eb1224df8b0",
+    "subject": "Removed Architecture diagrams (#14120)",
+    "files": [
+      "dev_config/python/.pre-commit-config.yaml",
+      "dev_config/python/ruff.toml",
+      "openhands/architecture/README.md",
+      "openhands/architecture/agent-execution.md",
+      "openhands/architecture/conversation-startup.md",
+      "openhands/architecture/observability.md",
+      "openhands/architecture/system-architecture.md"
+    ]
+  },
+  {
+    "hash": "7bc3300981fa1cb4689d6e1b0c0bdd7fd77ac954",
+    "subject": "Add missing `SqlAlchemy` type stub to mypy (#13413)",
+    "files": [
+      "dev_config/python/.pre-commit-config.yaml",
+      "enterprise/dev_config/python/.pre-commit-config.yaml",
+      "openhands/app_server/app_conversation/sql_app_conversation_info_service.py"
+    ]
+  },
+  {
+    "hash": "c1ae41acb9d5a5718c1f21e9209945d2e1254966",
+    "subject": "fix(enterprise): migrate org-related models to SQLAlchemy 2.0 [12/13] (#13858)",
+    "files": [
+      "enterprise/storage/org_git_claim.py",
+      "enterprise/storage/org_invitation.py",
+      "enterprise/storage/stripe_customer.py"
+    ]
+  },
+  {
+    "hash": "ae2f13ecbadd4ec5d57c6615d92f68a4010cf5db",
+    "subject": "fix(enterprise): migrate auth models to SQLAlchemy 2.0 [7/13] (#13853)",
+    "files": [
+      "enterprise/storage/api_key.py",
+      "enterprise/storage/auth_tokens.py",
+      "enterprise/storage/role.py"
+    ]
+  },
+  {
+    "hash": "7bbef997718cbabc3ad8772d2f540657b24d4d68",
+    "subject": "Move Tavily search key to MCP settings (#14000)",
+    "files": [
+      ".gitattributes",
+      "AGENTS.md",
+      "frontend/__tests__/routes/llm-settings.test.tsx",
+      "frontend/__tests__/routes/mcp-settings.test.tsx",
+      "frontend/src/i18n/declaration.ts",
+      "frontend/src/routes/llm-settings.tsx",
+      "frontend/src/routes/mcp-settings.tsx"
+    ]
+  },
+  {
+    "hash": "ef452b6544b7ed6336735a6b435e6f5cf4e408b7",
+    "subject": "Fix concurrent GET /api/v1/web-client/config calls (#13905)",
+    "files": [
+      "frontend/__tests__/utils/permission-guard.test.ts",
+      "frontend/src/components/providers/posthog-wrapper.tsx",
+      "frontend/src/hooks/query/query-keys.ts",
+      "frontend/src/hooks/query/use-config.ts",
+      "frontend/src/routes/billing.tsx",
+      "frontend/src/routes/settings.tsx",
+      "frontend/src/utils/org/permission-guard.ts"
+    ]
+  }
+]

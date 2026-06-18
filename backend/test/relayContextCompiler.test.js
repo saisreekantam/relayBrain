@@ -57,6 +57,18 @@ test('compileStructured: collapsed chain renders as one block, not three', () =>
   assert.deepEqual(new Set(result.includedNodeIds), new Set(['decision:b', 'decision:a']));
 });
 
+test('compileStructured: a dated history entry has its date prefix stripped before truncation, not after (found via a real benchmark — the date alone was eating most of the truncation budget)', () => {
+  const items = [
+    item('decision:a', { id: 'decision:a', type: 'Decision', text: '2026-02-01 — Use a single shared sandbox container per session' }, 0.1),
+    item('decision:b', { id: 'decision:b', type: 'Decision', text: 'Use per-conversation isolated sandbox containers' }, 0.9),
+  ];
+  const edges = [{ from: 'decision:b', to: 'decision:a', relation: 'SUPERSEDES' }];
+  const result = compiler.compileStructured(items, edges, 1800, { applyFloor: false });
+
+  assert.ok(!result.text.includes('2026-02-01'), 'the date prefix must not consume the history line\'s display budget');
+  assert.match(result.text, /History: Use a single shared/, 'real content, not just the date, must survive truncation');
+});
+
 test('compileStructured: greedy-fill never exceeds the token budget, and always returns at least one (truncated) block even when the budget is too small for one full block', () => {
   const items = [
     item('decision:a', { id: 'decision:a', type: 'Decision', text: 'x'.repeat(2000) }, 0.9),

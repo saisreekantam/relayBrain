@@ -42,8 +42,38 @@ function tokenize(text) {
     .filter(Boolean);
 }
 
+/**
+ * Plain BM25 has no concept of "what fraction of the query matched" — a
+ * single rare term with high IDF can score deceptively high even when every
+ * other query term is completely unmatched (found via a hand-authored
+ * benchmark: "What blockchain integration does this project have?" scored
+ * 0.6 confidence purely because one unrelated task happens to contain the
+ * word "integration," with zero relation to blockchain or the rest of the
+ * query). Discounting by the fraction of distinct query terms actually
+ * present in the node's own text is an independent signal layered on top —
+ * same approach as the directory-match boost, not a reweighting of BM25's
+ * internal IDF math, and it only ever discounts, never invents relevance.
+ */
+function queryCoverageRatio(queryTokens, node) {
+  if (!queryTokens.length) return 1;
+  const distinctQueryTokens = [...new Set(queryTokens)];
+  const nodeTokens = new Set(tokenize(nodeSearchText(node)));
+  const matched = distinctQueryTokens.filter((t) => nodeTokens.has(t)).length;
+  return matched / distinctQueryTokens.length;
+}
+
+// node.type is deliberately NOT included here. It's a small, shared
+// vocabulary ("Goal", "Decision", "Task"...) that every node of that type
+// trivially matches — so a completely natural query like "what's the GOAL
+// of X" gives every Goal node in the project a free, non-discriminating
+// boost, diluting the one that's actually relevant as a project accumulates
+// more nodes of that type. Found via a hand-authored benchmark corpus, not a
+// unit test — it only shows up once there's more than one or two nodes of
+// the same type to compete with each other. node.kind is kept: it's a much
+// narrower, per-node value (e.g. Evidence's "benchmark"/"issue"), not a
+// type-wide label every sibling shares.
 function nodeSearchText(node) {
-  return [node.text, node.type, node.kind].filter(Boolean).join(' ');
+  return [node.text, node.kind].filter(Boolean).join(' ');
 }
 
 /**
@@ -258,7 +288,13 @@ function retrieve(workspacePath, queryText, opts = {}) {
   const embeddingWeight = opts.embeddingWeight ?? DEFAULT_EMBEDDING_WEIGHT;
 
   function relevanceFor(nodeId) {
-    const bm25Norm = hasQuery ? (bm25.get(nodeId) || 0) / maxBm25 : 1;
+    const node = nodesById.get(nodeId);
+    let bm25Norm = hasQuery ? (bm25.get(nodeId) || 0) / maxBm25 : 1;
+    // Coverage discount applies only to the lexical BM25 signal, never to
+    // embedding similarity — semantic matches are legitimately allowed to
+    // have zero literal term overlap, that's the entire point of them.
+    if (hasQuery && node) bm25Norm *= queryCoverageRatio(queryTokens, node);
+
     let combined = bm25Norm;
     if (embeddingsCache && opts.queryEmbedding) {
       const nodeVector = embeddingsCache[nodeId]?.vector;
@@ -271,7 +307,6 @@ function retrieve(workspacePath, queryText, opts = {}) {
     // some nonzero bm25Norm already (the directory name is part of node.text,
     // so BM25 already saw it) — multiplying can't invent relevance out of
     // nothing, it can only amplify a real, already-present match.
-    const node = nodesById.get(nodeId);
     if (node) {
       const ratio = dirMatchRatio(node, eligibleTokens);
       if (ratio > 0) combined *= 1 + DIR_MATCH_BOOST * ratio;

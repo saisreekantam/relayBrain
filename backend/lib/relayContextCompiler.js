@@ -33,6 +33,18 @@ const TRUNCATE_LEN = 80;
 // than just dumping every version. See docs/KNOWLEDGE_GRAPH_PLAN.md §12.
 const HISTORY_ENTRY_LEN = 24;
 
+// A resolved decision's stored text always starts with its date
+// ("2026-02-01 — ..."), an internal storage detail from
+// parseResolvedDecisionLines — at HISTORY_ENTRY_LEN=24 chars, that prefix
+// alone burns over half the budget before any real content, producing
+// "2026-02-01 — Use a sing…" in a history line. Strip it for display only
+// (never touches the real node.text used for search/matching) so the
+// truncation budget goes to content a reader can actually use.
+const DATE_PREFIX_RE = /^\d{4}-\d{2}-\d{2}\s*[—-]\s*/;
+function stripDatePrefixForDisplay(text) {
+  return String(text || '').replace(DATE_PREFIX_RE, '');
+}
+
 function safeReadJson(filePath, fallback) {
   try {
     const raw = fs.readFileSync(filePath, 'utf-8').trim();
@@ -136,7 +148,9 @@ function renderBlock(item, byId, chains) {
     const label = node.type === 'Decision' ? 'Decision' : node.type;
     const predecessors = chain.slice(0, -1); // exclude the head — it's already shown below, don't repeat its text
     if (!predecessors.length) return `${label} (current): ${truncate(node.text)}`;
-    const historyText = predecessors.map(id => truncate(byId.get(id)?.node.text || id, HISTORY_ENTRY_LEN)).join(' → ');
+    const historyText = predecessors
+      .map(id => truncate(stripDatePrefixForDisplay(byId.get(id)?.node.text || id), HISTORY_ENTRY_LEN))
+      .join(' → ');
     return `${label} (current): ${truncate(node.text)}\nHistory: ${historyText} → (current)`;
   }
 

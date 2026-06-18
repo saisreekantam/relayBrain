@@ -39,6 +39,7 @@ Usage:
   relay graph query "<text>"  Debug retrieval (--explain, --history, --agent, --embed)
   relay graph embed [path]   (Re)compute local embedding cache (optional, --force)
   relay graph stats [path]   Node/edge counts, decision reversal rate, agent reputation (--json)
+  relay decide supersede|contradict "<old text>" "<new text>" [path]  Explicit decision link
   relay mcp                   MCP server for .relay file access (stdio)
   relay open                  Print UI URL
 
@@ -325,6 +326,53 @@ async function cmdGraph(positional, flags) {
   }
 }
 
+/**
+ * The explicit half of §6.5's supersession design: the materializer has
+ * always handled DecisionSuperseded/DecisionContradicted events, and the
+ * narrow heuristic has always been able to emit them — but nothing let a
+ * user/agent say so directly. Found via a benchmark, not a bug report: a
+ * realistic query ("what approach was replaced?") had no way to succeed
+ * because no edge connected the two decisions at all. Identifies decisions
+ * by their exact text (the same content-addressed id every other ingestion
+ * path already uses), not an opaque hash, so this is usable without first
+ * running `relay graph query` to look one up.
+ */
+function cmdDecide(action, oldText, newText, workspacePath) {
+  ensureRelayDir(workspacePath);
+  if (!oldText || !newText) {
+    console.error(`Usage: relay decide ${action} "<old decision text>" "<new decision text>" [path]`);
+    process.exit(1);
+  }
+  const relayGraph = require(path.join(BACKEND, 'lib', 'relayGraph'));
+  const { nodes } = relayGraph.materializeGraph(relayGraph.readEvents(workspacePath));
+  const decisionNodes = nodes.filter((n) => n.type === 'Decision');
+
+  function resolveOrExit(text, label) {
+    const resolved = relayGraph.resolveDecisionRef(text, decisionNodes);
+    if (resolved.matched === 'ambiguous') {
+      console.error(`✗ "${text}" (${label}) matches more than one existing decision — be more specific:`);
+      for (const c of resolved.candidates) console.error(`    - ${c.text}`);
+      process.exit(1);
+    }
+    if (resolved.matched === 'none') {
+      console.warn(`⚠ No existing decision matches the ${label} text — it will still be recorded as ${resolved.id}`);
+    }
+    return resolved.id;
+  }
+
+  const oldId = resolveOrExit(oldText, 'old');
+  const newId = resolveOrExit(newText, 'new');
+
+  if (action === 'supersede') {
+    relayGraph.appendEvent(workspacePath, { type: 'DecisionSuperseded', source: 'relay:explicit', nodeId: oldId, supersededBy: newId });
+  } else {
+    relayGraph.appendEvent(workspacePath, { type: 'DecisionContradicted', source: 'relay:explicit', nodeId: oldId, otherId: newId });
+  }
+  const result = relayGraph.rebuildGraph(workspacePath);
+  console.log(`✓ Recorded: ${newId} ${action === 'supersede' ? 'SUPERSEDES' : 'CONTRADICTS'} ${oldId}`);
+  console.log(`  Graph rebuilt: ${result.nodeCount} nodes, ${result.edgeCount} edges`);
+}
+
 function cmdMcp() {
   const mcpPath = path.join(BACKEND, 'mcp', 'server.js');
   spawn(process.execPath, [mcpPath], {
@@ -389,6 +437,15 @@ async function main() {
     case 'graph':
       await cmdGraph(positional, flags);
       break;
+    case 'decide': {
+      const action = positional[1];
+      if (action !== 'supersede' && action !== 'contradict') {
+        console.error('Usage: relay decide supersede|contradict "<old decision text>" "<new decision text>" [path]');
+        process.exit(1);
+      }
+      cmdDecide(action, positional[2], positional[3], resolveWorkspace(positional[4]));
+      break;
+    }
     case 'skill':
       cmdInstall(resolveWorkspace(positional[1]));
       break;

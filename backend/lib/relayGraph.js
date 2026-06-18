@@ -94,6 +94,32 @@ function stableId(prefix, text) {
   return `${prefix}:${hash}`;
 }
 
+/**
+ * Resolves user-supplied decision text (e.g. from `relay decide supersede`)
+ * to a real node id. Exact stableId match first; falls back to a substring
+ * match against existing decision texts, since a resolved decision's stored
+ * text includes its date prefix ("2026-02-01 — ...") as an internal storage
+ * detail a real user typing the bare sentence has no way to know about —
+ * found via a real CLI smoke test, not a hypothetical. Ambiguous substring
+ * matches are reported, never silently guessed; zero matches fall back to
+ * the literal computed id (so pre-registering a not-yet-existing decision
+ * still works), never thrown away.
+ */
+function resolveDecisionRef(text, decisionNodes) {
+  const exactId = stableId('decision', text);
+  if (decisionNodes.some((n) => n.id === exactId)) return { id: exactId, matched: 'exact' };
+
+  const lower = String(text || '').trim().toLowerCase();
+  const candidates = decisionNodes.filter((n) => {
+    const nodeLower = String(n.text || '').toLowerCase();
+    return lower && (nodeLower.includes(lower) || lower.includes(nodeLower));
+  });
+
+  if (candidates.length === 1) return { id: candidates[0].id, matched: 'substring' };
+  if (candidates.length > 1) return { id: exactId, matched: 'ambiguous', candidates };
+  return { id: exactId, matched: 'none' };
+}
+
 /** Sortable, unique-enough event id. Not spec-compliant ULID, same intent (time-ordered + unique). */
 function generateEventId() {
   const ts = Date.now().toString(36).padStart(9, '0');
@@ -965,6 +991,7 @@ module.exports = {
   DEFAULT_DECAY_RATE,
   getGraphDir,
   stableId,
+  resolveDecisionRef,
   generateEventId,
   appendEvent,
   readEvents,
